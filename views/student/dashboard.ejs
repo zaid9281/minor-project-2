@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard — SOET Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="/css/main.css" rel="stylesheet">
+  <style>
+    :root {
+      --krmu-blue: #003399;
+      --krmu-gold: #FFB800;
+      --bg: #f0f4ff;
+    }
+    body { background: var(--bg); font-family: 'Segoe UI', sans-serif; }
+
+    /* ── Profile Card ── */
+    .profile-card {
+      background: linear-gradient(135deg, #003399 0%, #0055cc 60%, #0077ff 100%);
+      border-radius: 20px;
+      color: white;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,51,153,0.25);
+    }
+    .profile-card::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 180px; height: 180px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 50%;
+    }
+    .profile-card::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -30px;
+      width: 220px; height: 220px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .avatar-circle {
+      width: 72px; height: 72px;
+      background: rgba(255,184,0,0.2);
+      border: 3px solid var(--krmu-gold);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 700; color: var(--krmu-gold);
+      flex-shrink: 0;
+    }
+    .profile-badge {
+      background: rgba(255,184,0,0.2);
+      border: 1px solid rgba(255,184,0,0.4);
+      color: var(--krmu-gold);
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* ── Stat Cards ── */
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+      height: 100%;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    /* ── Subject Cards ── */
+    .subject-card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.07);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      transition: all 0.25s ease;
+      overflow: hidden;
+    }
+    .subject-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 28px rgba(0,51,153,0.13);
+      border-color: rgba(0,51,153,0.2);
+    }
+    .subject-header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .subject-code-badge {
+      background: #eef2ff;
+      color: var(--krmu-blue);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+    .subject-type-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+    .badge-theory { background: #e8f5e9; color: #2e7d32; }
+    .badge-lab { background: #fff3e0; color: #e65100; }
+    .badge-project { background: #f3e5f5; color: #6a1b9a; }
+    .subject-body { padding: 16px 20px; }
+    .subject-footer {
+      padding: 14px 20px;
+      background: #fafafa;
+      border-top: 1px solid #f0f0f0;
+    }
+    .faculty-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f0f4ff;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+    }
+    .material-count-pill {
+      background: #e8f5e9;
+      color: #2e7d32;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .pyq-pill {
+      background: #fff3e0;
+      color: #e65100;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .pyq-none {
+      background: #f5f5f5;
+      color: #9e9e9e;
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .btn-view {
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 6px 14px;
+      transition: all 0.2s;
+    }
+    .btn-materials {
+      background: #eef2ff;
+      color: var(--krmu-blue);
+      border: none;
+    }
+    .btn-materials:hover { background: var(--krmu-blue); color: white; }
+    .btn-pyq {
+      background: #fff3e0;
+      color: #e65100;
+      border: none;
+    }
+    .btn-pyq:hover { background: #e65100; color: white; }
+    .btn-pyq:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Section Headings ── */
+    .section-heading {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .section-heading::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, #e0e7ff, transparent);
+      border-radius: 2px;
+    }
+
+    /* ── Placeholder cards ── */
+    .placeholder-card {
+      background: white;
+      border-radius: 16px;
+      border: 2px dashed #dee2e6;
+      padding: 24px;
+      text-align: center;
+      color: #aaa;
+    }
+
+    /* ── Semester ribbon ── */
+    .sem-ribbon {
+      background: linear-gradient(90deg, var(--krmu-gold), #ffcc44);
+      color: #1a1a1a;
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 5px 16px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Credit bar ── */
+    .credit-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: #eef2ff;
+      overflow: hidden;
+    }
+    .credit-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--krmu-blue), #0077ff);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body data-authenticated="true">
+
+<%- include('../partials/studentNavbar') %>
+
+<div class="container-fluid px-3 px-md-4 py-4" style="max-width: 1300px; margin: 0 auto;">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- ROW 1: Profile + Semester Info             -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="row g-4 mb-4">
+
+    <!-- Profile Card -->
+    <div class="col-12 col-lg-5">
+      <div class="profile-card h-100">
+        <div class="d-flex align-items-start gap-3 mb-3" style="position:relative;z-index:1;">
+          <div class="avatar-circle">
+            <%= student.name.charAt(0).toUpperCase() %>
+          </div>
+          <div>
+            <h4 class="fw-bold mb-1" style="font-size:1.2rem;"><%= student.name %></h4>
+            <div class="opacity-75 mb-2" style="font-size:0.82rem;">
+              <i class="bi bi-credit-card-2-front me-1"></i><%= student.rollNo %>
+            </div>
+            <span class="profile-badge"><%= student.section ? `Section ${student.section}` : 'Section A' %></span>
+          </div>
+        </div>
+
+        <div class="row g-2" style="position:relative;z-index:1;">
+          <div class="col-12">
+            <div class="p-2 rounded-3" style="background:rgba(255,255,255,0.1);">
+              <div style="font-size:0.72rem;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px;">Course</div>
+              <div style="font-size:0.88rem;font-weight:600;line-height:1.3;" class="mt-1"><%= student.courseName %></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 rounded-3" style="background:rgba(255,255,255,0.1);">
+              <div style="font-size:0.72rem;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px;">Batch</div>
+              <div style="font-size:0.88rem;font-weight:600;" class="mt-1"><%= student.batch %></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 rounded-3" style="background:rgba(255,255,255,0.1);">
+              <div style="font-size:0.72rem;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px;">Enrollment</div>
+              <div style="font-size:0.88rem;font-weight:600;" class="mt-1"><%= student.enrollmentYear %></div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="p-2 rounded-3" style="background:rgba(255,255,255,0.1);">
+              <div style="font-size:0.72rem;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px;">University Email</div>
+              <div style="font-size:0.82rem;font-weight:500;" class="mt-1">
+                <i class="bi bi-envelope me-1"></i><%= student.email %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Semester + Stats -->
+    <div class="col-12 col-lg-7">
+      <div class="row g-3 h-100">
+
+        <!-- Current Semester Banner -->
+        <div class="col-12">
+          <div class="stat-card" style="background: linear-gradient(135deg,#fff9e6,#fffde7); border-color: #ffe082;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div>
+                <div class="text-muted mb-1" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">
+                  <i class="bi bi-calendar3 me-1"></i>Current Academic Period
+                </div>
+                <h3 class="fw-bold mb-1" style="color:#1a1a1a;font-size:1.5rem;">
+                  <%= semesterLabel %>
+                </h3>
+                <div class="text-muted" style="font-size:0.83rem;">
+                  Academic Year <strong><%= academicYear %></strong> &nbsp;·&nbsp;
+                  <span style="text-transform:capitalize;"><%= semesterType %> Semester</span>
+                </div>
+              </div>
+              <div class="text-center">
+                <div class="rounded-3 px-4 py-3" style="background:rgba(255,184,0,0.15);border:2px solid var(--krmu-gold);">
+                  <div style="font-size:2rem;font-weight:800;color:var(--krmu-blue);line-height:1;">
+                    Sem <%= currentSemester %>
+                  </div>
+                  <div style="font-size:0.72rem;color:#666;margin-top:2px;">of 8</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Progress bar for degree completion -->
+            <div class="mt-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span style="font-size:0.75rem;color:#666;">Degree Progress</span>
+                <span style="font-size:0.75rem;font-weight:700;color:var(--krmu-blue);"><%= Math.round((currentSemester/8)*100) %>%</span>
+              </div>
+              <div style="height:8px;background:#e0e7ff;border-radius:10px;overflow:hidden;">
+                <div style="height:100%;width:<%= Math.round((currentSemester/8)*100) %>%;background:linear-gradient(90deg,#003399,#0077ff);border-radius:10px;transition:width 1s;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="col-6 col-md-3">
+          <div class="stat-card text-center">
+            <div class="stat-icon mx-auto mb-2" style="background:#eef2ff;">
+              <i class="bi bi-book-fill" style="color:var(--krmu-blue);"></i>
+            </div>
+            <div class="fw-bold fs-4" style="color:var(--krmu-blue);"><%= subjects.length %></div>
+            <div class="text-muted" style="font-size:0.75rem;">Subjects</div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="stat-card text-center">
+            <div class="stat-icon mx-auto mb-2" style="background:#e8f5e9;">
+              <i class="bi bi-file-earmark-text-fill" style="color:#2e7d32;"></i>
+            </div>
+            <div class="fw-bold fs-4" style="color:#2e7d32;">
+              <%= subjects.reduce((sum, s) => sum + s.materialCount, 0) %>
+            </div>
+            <div class="text-muted" style="font-size:0.75rem;">Materials</div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="stat-card text-center">
+            <div class="stat-icon mx-auto mb-2" style="background:#fff3e0;">
+              <i class="bi bi-file-earmark-pdf-fill" style="color:#e65100;"></i>
+            </div>
+            <div class="fw-bold fs-4" style="color:#e65100;">
+              <%= subjects.reduce((sum, s) => sum + s.pyqCount, 0) %>
+            </div>
+            <div class="text-muted" style="font-size:0.75rem;">PYQs</div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="stat-card text-center">
+            <div class="stat-icon mx-auto mb-2" style="background:#f3e5f5;">
+              <i class="bi bi-award-fill" style="color:#6a1b9a;"></i>
+            </div>
+            <div class="fw-bold fs-4" style="color:#6a1b9a;">
+              <%= subjects.reduce((sum, s) => sum + (s.credits || 0), 0) %>
+            </div>
+            <div class="text-muted" style="font-size:0.75rem;">Credits</div>
+          </div>
+        </div>
+
+        <!-- Attendance Placeholder -->
+        <div class="col-12 col-md-6">
+          <div class="stat-card">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <div class="stat-icon" style="background:#e3f2fd; width:36px; height:36px; font-size:1.1rem;">
+                <i class="bi bi-person-check-fill" style="color:#1565c0;"></i>
+              </div>
+              <span class="fw-semibold" style="font-size:0.88rem;">Attendance</span>
+              <span class="badge bg-secondary ms-auto" style="font-size:0.65rem;">Coming Soon</span>
+            </div>
+            <div class="placeholder-glow">
+              <div class="d-flex justify-content-between text-muted mb-1" style="font-size:0.75rem;">
+                <span>Overall</span><span>--</span>
+              </div>
+              <div style="height:8px;background:#e3f2fd;border-radius:10px;">
+                <div style="height:100%;width:75%;background:#90caf9;border-radius:10px;"></div>
+              </div>
+              <div class="mt-2 text-muted" style="font-size:0.72rem;">
+                <i class="bi bi-info-circle me-1"></i>Integration with ERP coming soon
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exam Schedule Placeholder -->
+        <div class="col-12 col-md-6">
+          <div class="stat-card">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <div class="stat-icon" style="background:#fce4ec; width:36px; height:36px; font-size:1.1rem;">
+                <i class="bi bi-calendar-event-fill" style="color:#c62828;"></i>
+              </div>
+              <span class="fw-semibold" style="font-size:0.88rem;">Exam Schedule</span>
+              <span class="badge bg-secondary ms-auto" style="font-size:0.65rem;">Coming Soon</span>
+            </div>
+            <div class="text-muted" style="font-size:0.78rem;">
+              <div class="d-flex justify-content-between py-1 border-bottom">
+                <span>Mid-Term</span><span class="text-muted">--/--/----</span>
+              </div>
+              <div class="d-flex justify-content-between py-1">
+                <span>End-Term</span><span class="text-muted">--/--/----</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- ROW 2: Subjects                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section-heading">
+    <i class="bi bi-journal-richtext" style="color:var(--krmu-blue);"></i>
+    Enrolled Subjects — <%= semesterLabel %>
+    <span class="sem-ribbon ms-2"><%= academicYear %></span>
+  </div>
+
+  <!-- Subject Search -->
+  <div class="mb-4">
+    <div class="input-group" style="max-width:380px;">
+      <span class="input-group-text" style="background:white;border-color:#e0e7ff;border-radius:12px 0 0 12px;">
+        <i class="bi bi-search" style="color:#003399;"></i>
+      </span>
+      <input type="text" id="subjectSearch" class="form-control"
+        placeholder="Search subjects by name or code..."
+        style="border-color:#e0e7ff;border-left:none;border-radius:0 12px 12px 0;font-size:0.88rem;"
+        oninput="filterSubjects(this.value)">
+    </div>
+  </div>
+
+  <% if (subjects.length === 0) { %>
+    <div class="placeholder-card">
+      <i class="bi bi-journal-x fs-1 d-block mb-3"></i>
+      <h5>No subjects found for this semester</h5>
+      <p class="text-muted mb-0">Please contact your department if this seems incorrect.</p>
+    </div>
+  <% } else { %>
+
+    <!-- Theory Subjects -->
+    <% const theorySubjects = subjects.filter(s => s.type !== 'Lab'); %>
+    <% const labSubjects = subjects.filter(s => s.type === 'Lab'); %>
+
+    <% if (theorySubjects.length > 0) { %>
+      <div class="row g-3 mb-4">
+        <% theorySubjects.forEach(subject => { %>
+          <div class="col-12 col-md-6 col-xl-4">
+            <div class="subject-card h-100 d-flex flex-column">
+
+              <!-- Subject Header -->
+              <div class="subject-header">
+                <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                  <span class="subject-code-badge"><%= subject.subjectCode %></span>
+                  <div class="d-flex gap-1 flex-wrap justify-content-end">
+                    <span class="subject-type-badge <%= subject.category === 'Minor Project' || subject.category === 'Major Project' ? 'badge-project' : 'badge-theory' %>">
+                      <%= subject.category === 'Minor Project' || subject.category === 'Major Project' ? '🎯 ' + subject.category : '📘 ' + subject.type %>
+                    </span>
+                  </div>
+                </div>
+                <h6 class="fw-bold mb-0" style="font-size:0.93rem;line-height:1.4;color:#1a1a1a;">
+                  <%= subject.name %>
+                </h6>
+                <% if (subject.shortName) { %>
+                  <div class="text-muted mt-1" style="font-size:0.75rem;">(<%= subject.shortName %>)</div>
+                <% } %>
+              </div>
+
+              <!-- Subject Body -->
+              <div class="subject-body flex-grow-1">
+
+                <!-- Credits -->
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span style="font-size:0.75rem;color:#666;font-weight:600;">
+                      <i class="bi bi-star-fill me-1" style="color:var(--krmu-gold);font-size:0.65rem;"></i>
+                      Credits
+                    </span>
+                    <span style="font-size:0.82rem;font-weight:700;color:var(--krmu-blue);"><%= subject.credits %></span>
+                  </div>
+                  <div class="credit-bar">
+                    <div class="credit-fill" style="width:<%= Math.min((subject.credits / 5) * 100, 100) %>%;"></div>
+                  </div>
+                </div>
+
+                <!-- Faculty -->
+                <% if (subject.theoryFaculty) { %>
+                  <div class="faculty-chip mb-2 w-100">
+                    <i class="bi bi-person-fill" style="color:var(--krmu-blue);font-size:0.85rem;"></i>
+                    <div>
+                      <div style="font-weight:600;color:#333;font-size:0.78rem;line-height:1.2;"><%= subject.theoryFaculty.name %></div>
+                      <div style="color:#888;font-size:0.68rem;"><%= subject.theoryFaculty.designation %></div>
+                    </div>
+                  </div>
+                <% } else { %>
+                  <div class="faculty-chip mb-2 text-muted w-100">
+                    <i class="bi bi-person-dash"></i>
+                    <span style="font-size:0.78rem;">Faculty not assigned</span>
+                  </div>
+                <% } %>
+
+                <!-- Material & PYQ counts -->
+                <div class="d-flex gap-2 flex-wrap mt-2">
+                  <span class="material-count-pill">
+                    <i class="bi bi-file-earmark-text me-1"></i><%= subject.materialCount %> Materials
+                  </span>
+                  <% if (subject.hasPYQ) { %>
+                    <span class="pyq-pill">
+                      <i class="bi bi-file-earmark-pdf me-1"></i><%= subject.pyqCount %> PYQs
+                    </span>
+                  <% } else { %>
+                    <span class="pyq-none">No PYQs yet</span>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Subject Footer — Action Buttons -->
+              <div class="subject-footer d-flex gap-2">
+                <a href="/student/subjects/<%= subject.subjectCode %>/materials"
+                   class="btn btn-view btn-materials flex-fill text-center">
+                  <i class="bi bi-book me-1"></i>Materials
+                </a>
+                <a href="/student/subjects/<%= subject.subjectCode %>/pyqs"
+                   class="btn btn-view btn-pyq flex-fill text-center <%= !subject.hasPYQ ? 'disabled' : '' %>">
+                  <i class="bi bi-file-earmark-pdf me-1"></i>PYQs
+                </a>
+              </div>
+
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <!-- Lab Subjects -->
+    <% if (labSubjects.length > 0) { %>
+      <div class="section-heading">
+        <i class="bi bi-cpu-fill" style="color:#e65100;"></i>
+        Lab / Practical Subjects
+      </div>
+      <div class="row g-3 mb-4">
+        <% labSubjects.forEach(subject => { %>
+          <div class="col-12 col-md-6 col-xl-4">
+            <div class="subject-card h-100 d-flex flex-column" style="border-left: 4px solid #e65100;">
+
+              <div class="subject-header">
+                <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                  <span class="subject-code-badge"><%= subject.subjectCode %></span>
+                  <span class="subject-type-badge badge-lab">🔬 Lab</span>
+                </div>
+                <h6 class="fw-bold mb-0" style="font-size:0.93rem;line-height:1.4;color:#1a1a1a;">
+                  <%= subject.name %>
+                </h6>
+              </div>
+
+              <div class="subject-body flex-grow-1">
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span style="font-size:0.75rem;color:#666;font-weight:600;">
+                      <i class="bi bi-star-fill me-1" style="color:var(--krmu-gold);font-size:0.65rem;"></i>Credits
+                    </span>
+                    <span style="font-size:0.82rem;font-weight:700;color:#e65100;"><%= subject.credits %></span>
+                  </div>
+                  <div class="credit-bar">
+                    <div style="height:100%;width:<%= Math.min((subject.credits / 5) * 100, 100) %>%;background:linear-gradient(90deg,#e65100,#ff9800);border-radius:2px;"></div>
+                  </div>
+                </div>
+
+                <% if (subject.labFaculty) { %>
+                  <div class="faculty-chip mb-2 w-100">
+                    <i class="bi bi-person-workspace" style="color:#e65100;font-size:0.85rem;"></i>
+                    <div>
+                      <div style="font-weight:600;color:#333;font-size:0.78rem;line-height:1.2;"><%= subject.labFaculty.name %></div>
+                      <div style="color:#888;font-size:0.68rem;"><%= subject.labFaculty.designation %></div>
+                    </div>
+                  </div>
+                <% } else { %>
+                  <div class="faculty-chip mb-2 text-muted w-100">
+                    <i class="bi bi-person-dash"></i>
+                    <span style="font-size:0.78rem;">Instructor not assigned</span>
+                  </div>
+                <% } %>
+
+                <div class="d-flex gap-2 flex-wrap mt-2">
+                  <span class="material-count-pill">
+                    <i class="bi bi-file-earmark-text me-1"></i><%= subject.materialCount %> Materials
+                  </span>
+                  <% if (subject.hasPYQ) { %>
+                    <span class="pyq-pill"><i class="bi bi-file-earmark-pdf me-1"></i><%= subject.pyqCount %> PYQs</span>
+                  <% } else { %>
+                    <span class="pyq-none">No PYQs yet</span>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="subject-footer d-flex gap-2">
+                <a href="/student/subjects/<%= subject.subjectCode %>/materials"
+                   class="btn btn-view btn-materials flex-fill text-center">
+                  <i class="bi bi-file-earmark-text me-1"></i>Lab Sheets
+                </a>
+                <a href="/student/subjects/<%= subject.subjectCode %>/pyqs"
+                   class="btn btn-view btn-pyq flex-fill text-center <%= !subject.hasPYQ ? 'disabled' : '' %>">
+                  <i class="bi bi-file-earmark-pdf me-1"></i>PYQs
+                </a>
+              </div>
+
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+
+  <% } %>
+
+  <!-- Footer -->
+  <div class="text-center text-muted py-4 mt-2" style="font-size:0.78rem; border-top: 1px solid #e0e7ff;">
+    <i class="bi bi-shield-check me-1"></i>
+    SOET Resource Portal &copy; <%= new Date().getFullYear() %> · KR Mangalam University · School of Engineering & Technology
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+<script>
+  function filterSubjects(query) {
+    const q = query.toLowerCase().trim();
+    document.querySelectorAll('.subject-card').forEach(card => {
+      const text = card.textContent.toLowerCase();
+      card.closest('.col-12').style.display = text.includes(q) || !q ? '' : 'none';
+    });
+    // Show/hide "no results" message
+    const visible = [...document.querySelectorAll('.col-12')].filter(c => c.style.display !== 'none' && c.querySelector('.subject-card'));
+    let noResultsEl = document.getElementById('no-subject-results');
+    if (visible.length === 0 && q) {
+      if (!noResultsEl) {
+        noResultsEl = document.createElement('div');
+        noResultsEl.id = 'no-subject-results';
+        noResultsEl.className = 'col-12';
+        noResultsEl.innerHTML = `
+          <div style="background:white;border-radius:14px;padding:30px;text-align:center;color:#aaa;border:2px dashed #e0e7ff;">
+            <i class="bi bi-search fs-2 d-block mb-2"></i>
+            No subjects found for "<strong style="color:#555">${query}</strong>"
+          </div>`;
+        document.querySelector('.row.g-3').appendChild(noResultsEl);
+      }
+    } else if (noResultsEl) {
+      noResultsEl.remove();
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — All Uploads</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    body { background:#f0f4ff; font-family:'Segoe UI',sans-serif; }
+    .panel-card { background:white; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.06); margin-bottom:20px; }
+    .table th { font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; color:#666; font-weight:700; border-top:none; }
+    .table td { font-size:0.83rem; vertical-align:middle; }
+    .badge-mst { background:#fff3e0; color:#e65100; }
+    .badge-end { background:#fce4ec; color:#c62828; }
+  </style>
+</head>
+<body>
+<%- include('../partials/facultyNavbar') %>
+<div class="container-fluid px-3 px-md-4 py-4" style="max-width:1200px;margin:0 auto;">
+
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:48px;height:48px;background:#f3e5f5;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#7b1fa2;font-size:1.4rem;">
+      <i class="bi bi-shield-fill"></i>
+    </div>
+    <div>
+      <h4 class="fw-bold mb-0">Admin Panel — All Uploads</h4>
+      <div class="text-muted" style="font-size:0.82rem;">Manage all study materials and PYQs across all subjects</div>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="panel-card mb-4">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-12 col-md-5">
+        <label class="form-label fw-semibold small text-muted">Filter by Subject Code</label>
+        <select name="subjectCode" class="form-select form-select-sm">
+          <option value="">All Subjects</option>
+          <% allSubjectCodes.forEach(code => { %>
+            <option value="<%= code %>" <%= filters.subjectCode === code ? 'selected' : '' %>><%= code %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-primary" style="border-radius:8px;">Apply Filter</button>
+      </div>
+      <% if (filters.subjectCode) { %>
+        <div class="col-auto">
+          <a href="/faculty/admin/all-uploads" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;">Clear</a>
+        </div>
+      <% } %>
+    </form>
+  </div>
+
+  <!-- Study Materials Table -->
+  <div class="panel-card">
+    <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+      <i class="bi bi-file-earmark-text-fill" style="color:#2e7d32;"></i>
+      Study Materials (<%= materials.length %>)
+    </h6>
+    <% if (materials.length === 0) { %>
+      <div class="text-center text-muted py-4">No materials found</div>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead><tr>
+            <th>Subject</th><th>Title</th><th>Unit</th><th>Uploaded By</th><th>Date</th><th>Action</th>
+          </tr></thead>
+          <tbody>
+            <% materials.forEach(mat => { %>
+              <tr>
+                <td><span class="badge" style="background:#eef2ff;color:#003399;font-weight:700;"><%= mat.subjectCode %></span></td>
+                <td><%= mat.title %></td>
+                <td><span class="badge bg-secondary">Unit <%= mat.unit %></span></td>
+                <td><%= mat.facultyId ? mat.facultyId.name : 'N/A' %></td>
+                <td><%= new Date(mat.uploadedAt).toLocaleDateString('en-IN') %></td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <a href="/<%= mat.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-primary" style="border-radius:6px;font-size:0.72rem;">
+                      <i class="bi bi-download"></i>
+                    </a>
+                    <form action="/faculty/material/delete/<%= mat._id %>" method="POST" onsubmit="return confirm('Delete?')">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:6px;font-size:0.72rem;">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- PYQs Table -->
+  <div class="panel-card">
+    <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+      <i class="bi bi-file-earmark-pdf-fill" style="color:#e65100;"></i>
+      Previous Year Papers (<%= pyqs.length %>)
+    </h6>
+    <% if (pyqs.length === 0) { %>
+      <div class="text-center text-muted py-4">No PYQs found</div>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead><tr>
+            <th>Subject</th><th>Year</th><th>Exam Type</th><th>Sem Type</th><th>Uploaded By</th><th>Date</th><th>Action</th>
+          </tr></thead>
+          <tbody>
+            <% pyqs.forEach(pyq => { %>
+              <tr>
+                <td><span class="badge" style="background:#eef2ff;color:#003399;font-weight:700;"><%= pyq.subjectCode %></span></td>
+                <td><strong><%= pyq.year %></strong></td>
+                <td>
+                  <span class="badge <%= pyq.examType === 'EndSem' ? 'badge-end' : 'badge-mst' %>" style="font-size:0.72rem;">
+                    <%= pyq.examType %>
+                  </span>
+                </td>
+                <td style="text-transform:capitalize;"><%= pyq.semesterType %></td>
+                <td><%= pyq.facultyId ? pyq.facultyId.name : 'N/A' %></td>
+                <td><%= new Date(pyq.uploadedAt).toLocaleDateString('en-IN') %></td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <a href="/<%= pyq.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-primary" style="border-radius:6px;font-size:0.72rem;">
+                      <i class="bi bi-download"></i>
+                    </a>
+                    <form action="/faculty/pyq/delete/<%= pyq._id %>" method="POST" onsubmit="return confirm('Delete?')">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:6px;font-size:0.72rem;">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

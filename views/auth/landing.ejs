@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOET Resource Portal — KR Mangalam University</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="/css/main.css" rel="stylesheet">
+  <style>
+    :root {
+      --krmu-blue: #003399;
+      --krmu-gold: #FFB800;
+    }
+    body {
+      background: linear-gradient(135deg, #0a1628 0%, #003399 60%, #0055cc 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .portal-card {
+      background: rgba(255,255,255,0.97);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+    }
+    .logo-bar {
+      background: linear-gradient(90deg, var(--krmu-blue), #0055cc);
+      border-radius: 20px 20px 0 0;
+      padding: 28px 30px;
+    }
+    .login-btn {
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    .btn-ms {
+      background: #fff;
+      color: #333;
+      border-color: #ddd;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .btn-ms:hover {
+      background: #f3f3f3;
+      border-color: #0078d4;
+      box-shadow: 0 4px 16px rgba(0,120,212,0.2);
+      transform: translateY(-2px);
+    }
+    .btn-faculty {
+      background: linear-gradient(135deg, var(--krmu-blue), #0055cc);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(0,51,153,0.3);
+    }
+    .btn-faculty:hover {
+      background: linear-gradient(135deg, #002277, #003399);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,51,153,0.4);
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #aaa;
+      font-size: 0.85rem;
+      margin: 20px 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e0e0e0;
+    }
+    .ms-logo {
+      width: 22px;
+      height: 22px;
+      margin-right: 10px;
+    }
+    .badge-soet {
+      background: var(--krmu-gold);
+      color: #1a1a1a;
+      font-weight: 700;
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .info-box {
+      background: #f0f4ff;
+      border-left: 4px solid var(--krmu-blue);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: #444;
+    }
+  </style>
+</head>
+<body class="d-flex align-items-center justify-content-center py-5">
+  <% 
+    const urlMessage = typeof query !== 'undefined' && query.message ? query.message : null;
+  %>
+  <% if (urlMessage) { %>
+    <div id="page-toast" data-message="<%= urlMessage %>" data-type="success" class="d-none"></div>
+  <% } %>
+  <div class="portal-card w-100" style="max-width: 460px;">
+
+    <!-- Header -->
+    <div class="logo-bar text-white text-center">
+      <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
+        <i class="bi bi-mortarboard-fill fs-2" style="color: var(--krmu-gold);"></i>
+        <div class="text-start">
+          <div class="fw-bold fs-5 lh-1">KR Mangalam University</div>
+          <div style="font-size:0.78rem; opacity:0.85;">Gurugram, Haryana</div>
+        </div>
+      </div>
+      <div class="mt-2">
+        <span class="badge-soet">SOET RESOURCE PORTAL</span>
+      </div>
+      <div class="mt-1 opacity-75" style="font-size:0.8rem;">School of Engineering & Technology</div>
+    </div>
+
+    <!-- Body -->
+    <div class="p-4 p-md-5">
+
+      <% if (error) { %>
+        <div class="alert alert-danger d-flex align-items-start gap-2 mb-4" role="alert">
+          <i class="bi bi-exclamation-triangle-fill mt-1 flex-shrink-0"></i>
+          <span><%= error %></span>
+        </div>
+      <% } %>
+
+      <h5 class="text-center fw-bold mb-1" style="color:#1a1a1a;">Welcome Back</h5>
+      <p class="text-center text-muted mb-4" style="font-size:0.88rem;">Select your login method to continue</p>
+
+      <!-- Student Login — Microsoft -->
+      <a href="/auth/azure" class="btn btn-ms login-btn w-100 d-flex align-items-center justify-content-center mb-3">
+        <svg class="ms-logo" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="10" height="10" fill="#f35325"/>
+          <rect x="12" y="1" width="10" height="10" fill="#81bc06"/>
+          <rect x="1" y="12" width="10" height="10" fill="#05a6f0"/>
+          <rect x="12" y="12" width="10" height="10" fill="#ffba08"/>
+        </svg>
+        <span>Login as Student (Outlook)</span>
+      </a>
+
+      <div class="info-box mb-3">
+        <i class="bi bi-info-circle me-1"></i>
+        Students must sign in using their <strong>@krmu.edu.in</strong> university Outlook account.
+      </div>
+
+      <div class="divider">OR</div>
+
+      <!-- Faculty Login -->
+      <a href="/auth/faculty-login" class="btn btn-faculty login-btn w-100 d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-person-badge-fill fs-5"></i>
+        <span>Login as Faculty / Admin</span>
+      </a>
+
+      <hr class="my-4">
+
+      <div class="text-center text-muted" style="font-size:0.78rem;">
+        <i class="bi bi-shield-lock me-1"></i>
+        Secure access — SOET Academic Resources &copy; <%= new Date().getFullYear() %>
+      </div>
+    </div>
+  </div>
+<script src="/js/main.js"></script>
+</body>
+</html>

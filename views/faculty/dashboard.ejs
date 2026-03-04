@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="/css/main.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Dashboard — SOET Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    :root { --dark: #1a1a2e; --accent: #FFB800; --blue: #003399; }
+    body { background: #f0f4ff; font-family: 'Segoe UI', sans-serif; }
+
+    .profile-card {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+      border-radius: 20px; color: white; padding: 28px;
+      position: relative; overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+    .profile-card::before {
+      content:''; position:absolute; top:-40px; right:-40px;
+      width:180px; height:180px; background:rgba(255,255,255,0.05); border-radius:50%;
+    }
+    .avatar-circle {
+      width:72px; height:72px;
+      background:rgba(255,184,0,0.15); border:3px solid var(--accent);
+      border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-size:1.8rem; font-weight:700; color:var(--accent); flex-shrink:0;
+    }
+    .info-chip {
+      background:rgba(255,255,255,0.08); border-radius:10px;
+      padding:10px 14px;
+    }
+    .stat-card {
+      background:white; border-radius:16px; padding:20px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.06);
+      border:1px solid rgba(0,0,0,0.05);
+      transition:transform 0.2s; height:100%;
+    }
+    .stat-card:hover { transform:translateY(-3px); }
+    .stat-icon {
+      width:48px; height:48px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+    }
+    .subject-row {
+      background:white; border-radius:14px; padding:18px 22px;
+      border:1px solid rgba(0,0,0,0.06);
+      box-shadow:0 2px 8px rgba(0,0,0,0.04);
+      display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+      transition:all 0.2s; margin-bottom:10px;
+    }
+    .subject-row:hover { box-shadow:0 6px 20px rgba(0,51,153,0.1); transform:translateX(4px); }
+    .subject-code-tag {
+      background:#eef2ff; color:var(--blue);
+      font-weight:700; font-size:0.75rem; padding:4px 12px;
+      border-radius:8px; white-space:nowrap;
+    }
+    .count-pill {
+      font-size:0.75rem; font-weight:600; padding:4px 12px; border-radius:20px;
+    }
+    .pill-mat { background:#e8f5e9; color:#2e7d32; }
+    .pill-pyq { background:#fff3e0; color:#e65100; }
+    .upload-btn {
+      font-size:0.8rem; font-weight:600; border-radius:8px;
+      padding:6px 14px; text-decoration:none; display:inline-flex;
+      align-items:center; gap:5px; transition:all 0.2s;
+    }
+    .btn-upload-mat {
+      background:#eef2ff; color:var(--blue); border:none;
+    }
+    .btn-upload-mat:hover { background:var(--blue); color:white; }
+    .btn-upload-pyq {
+      background:#fff3e0; color:#e65100; border:none;
+    }
+    .btn-upload-pyq:hover { background:#e65100; color:white; }
+    .recent-item {
+      padding:12px 0; border-bottom:1px solid #f5f5f5;
+      display:flex; align-items:flex-start; gap:12px;
+    }
+    .recent-item:last-child { border-bottom:none; }
+    .recent-icon {
+      width:36px; height:36px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1rem; flex-shrink:0;
+    }
+    .section-heading {
+      font-size:1rem; font-weight:700; color:#333;
+      display:flex; align-items:center; gap:8px; margin-bottom:16px;
+    }
+    .section-heading::after {
+      content:''; flex:1; height:2px;
+      background:linear-gradient(90deg,#e0e7ff,transparent); border-radius:2px;
+    }
+    .sem-badge {
+      background:#eef2ff; color:var(--blue);
+      font-size:0.7rem; font-weight:700;
+      padding:2px 8px; border-radius:6px;
+    }
+  </style>
+</head>
+<body data-authenticated="true">
+
+<%- include('../partials/facultyNavbar') %>
+
+<div class="container-fluid px-3 px-md-4 py-4" style="max-width:1300px;margin:0 auto;">
+
+  <!-- Alerts -->
+    <% if (success) { %>
+    <div id="page-toast" data-message="<%= success %>" data-type="success" class="d-none"></div>
+    <% } %>
+    <% if (error) { %>
+    <div id="page-toast" data-message="<%= error %>" data-type="error" class="d-none"></div>
+    <% } %>
+
+  <!-- ROW 1: Profile + Stats -->
+  <div class="row g-4 mb-4">
+
+    <!-- Profile -->
+    <div class="col-12 col-lg-4">
+      <div class="profile-card h-100">
+        <div class="d-flex align-items-start gap-3 mb-4" style="position:relative;z-index:1;">
+          <div class="avatar-circle"><%= faculty.name.charAt(0).toUpperCase() %></div>
+          <div>
+            <h5 class="fw-bold mb-1" style="font-size:1.1rem;"><%= faculty.name %></h5>
+            <div class="opacity-70 mb-2" style="font-size:0.82rem;"><%= faculty.designation %></div>
+            <% if (user.role === 'admin') { %>
+              <span style="background:var(--accent);color:#1a1a1a;font-weight:700;padding:3px 12px;border-radius:20px;font-size:0.72rem;">
+                ⚡ ADMIN
+              </span>
+            <% } else { %>
+              <span style="background:rgba(255,255,255,0.15);color:#fff;padding:3px 12px;border-radius:20px;font-size:0.72rem;border:1px solid rgba(255,255,255,0.2);">
+                FACULTY
+              </span>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="d-flex flex-column gap-2" style="position:relative;z-index:1;">
+          <div class="info-chip">
+            <div style="font-size:0.68rem;opacity:0.6;text-transform:uppercase;letter-spacing:0.5px;">Employee ID</div>
+            <div style="font-size:0.88rem;font-weight:600;margin-top:2px;"><%= faculty.employeeId %></div>
+          </div>
+          <div class="info-chip">
+            <div style="font-size:0.68rem;opacity:0.6;text-transform:uppercase;letter-spacing:0.5px;">Department</div>
+            <div style="font-size:0.82rem;font-weight:500;margin-top:2px;line-height:1.3;"><%= faculty.department %></div>
+          </div>
+          <div class="info-chip">
+            <div style="font-size:0.68rem;opacity:0.6;text-transform:uppercase;letter-spacing:0.5px;">Specialization</div>
+            <div style="font-size:0.8rem;margin-top:4px;" class="d-flex flex-wrap gap-1">
+              <% (faculty.specialization || []).forEach(spec => { %>
+                <span style="background:rgba(255,184,0,0.15);color:var(--accent);padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;border:1px solid rgba(255,184,0,0.2);">
+                  <%= spec %>
+                </span>
+              <% }); %>
+            </div>
+          </div>
+          <div class="info-chip">
+            <div style="font-size:0.68rem;opacity:0.6;text-transform:uppercase;letter-spacing:0.5px;">Email</div>
+            <div style="font-size:0.78rem;margin-top:2px;word-break:break-all;"><%= faculty.email %></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="col-12 col-lg-8">
+      <div class="row g-3">
+
+        <div class="col-6 col-md-3">
+          <div class="stat-card text-center">
+            <div class="stat-icon mx-auto mb-2" style="background:#eef2ff;">
+              <i class="bi bi-journal-richtext" style="color:var(--blue);"></i>
+            </div>
+            <div class="fw-bold fs-3" style="color:var(--blue);"><%= assignedSubjects.length %></div>
+            <div class="text-muted" style="font-size:0.75rem;">
+              <%= user.role === 'admin' ? 'Total Subjects' : 'My Subjects' %>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="stat-card text-center">
+            <div class="stat-icon mx-auto mb-2" style="background:#e8f5e9;">
+              <i class="bi bi-file-earmark-text-fill" style="color:#2e7d32;"></i>
+            </div>
+            <div class="fw-bold fs-3" style="color:#2e7d32;"><%= totalMaterials %></div>
+            <div class="text-muted" style="font-size:0.75rem;">Materials Uploaded</div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="stat-card text-center">
+            <div class="stat-icon mx-auto mb-2" style="background:#fff3e0;">
+              <i class="bi bi-file-earmark-pdf-fill" style="color:#e65100;"></i>
+            </div>
+            <div class="fw-bold fs-3" style="color:#e65100;"><%= totalPYQs %></div>
+            <div class="text-muted" style="font-size:0.75rem;">PYQs Uploaded</div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="stat-card text-center">
+            <div class="stat-icon mx-auto mb-2" style="background:#f3e5f5;">
+              <% if (user.role === 'admin') { %>
+                <i class="bi bi-people-fill" style="color:#6a1b9a;"></i>
+              <% } else { %>
+                <i class="bi bi-clock-history" style="color:#6a1b9a;"></i>
+              <% } %>
+            </div>
+            <% if (user.role === 'admin') { %>
+              <div class="fw-bold fs-3" style="color:#6a1b9a;"><%= totalStudents %></div>
+              <div class="text-muted" style="font-size:0.75rem;">Total Students</div>
+            <% } else { %>
+              <div class="fw-bold fs-3" style="color:#6a1b9a;">
+                <%= assignedSubjects.reduce((s, sub) => s + sub.materialCount + sub.pyqCount, 0) %>
+              </div>
+              <div class="text-muted" style="font-size:0.75rem;">Total Uploads</div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Quick Upload Buttons -->
+        <div class="col-12">
+          <div class="stat-card">
+            <div class="fw-semibold mb-3" style="font-size:0.88rem;color:#555;">
+              <i class="bi bi-lightning-fill me-1" style="color:var(--accent);"></i>Quick Actions
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <a href="/faculty/upload/material" class="btn upload-btn btn-upload-mat px-4 py-2">
+                <i class="bi bi-cloud-upload-fill"></i>Upload Study Material
+              </a>
+              <a href="/faculty/upload/pyq" class="btn upload-btn btn-upload-pyq px-4 py-2">
+                <i class="bi bi-file-earmark-plus-fill"></i>Upload PYQ
+              </a>
+              <% if (user.role === 'admin') { %>
+                <a href="/faculty/admin/all-uploads" class="btn upload-btn px-4 py-2"
+                   style="background:#f3e5f5;color:#6a1b9a;border:none;">
+                  <i class="bi bi-shield-fill"></i>View All Uploads
+                </a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Subject List + Recent Activity -->
+  <div class="row g-4">
+
+    <!-- Subject List -->
+    <div class="col-12 col-lg-7">
+      <div class="section-heading">
+        <i class="bi bi-journal-richtext" style="color:var(--blue);"></i>
+        <%= user.role === 'admin' ? 'All Subjects' : 'My Assigned Subjects' %>
+      </div>
+
+      <% if (assignedSubjects.length === 0) { %>
+        <div style="background:white;border-radius:14px;padding:40px;text-align:center;color:#aaa;">
+          <i class="bi bi-journal-x fs-1 d-block mb-3"></i>
+          <p>No subjects assigned yet.</p>
+        </div>
+      <% } else { %>
+        <% assignedSubjects.forEach(subject => { %>
+          <div class="subject-row">
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                <span class="subject-code-tag"><%= subject.subjectCode %></span>
+                <span class="sem-badge">Sem <%= subject.semester %></span>
+                <span style="font-size:0.7rem;color:#999;background:#f5f5f5;padding:2px 8px;border-radius:6px;">
+                  <%= subject.type %>
+                </span>
+              </div>
+              <div class="fw-semibold" style="font-size:0.9rem;color:#1a1a1a;"><%= subject.name %></div>
+              <div class="d-flex gap-2 mt-2 flex-wrap">
+                <span class="count-pill pill-mat">
+                  <i class="bi bi-file-earmark-text me-1"></i><%= subject.materialCount %> Materials
+                </span>
+                <span class="count-pill pill-pyq">
+                  <i class="bi bi-file-earmark-pdf me-1"></i><%= subject.pyqCount %> PYQs
+                </span>
+              </div>
+            </div>
+            <div class="d-flex flex-column gap-2">
+              <a href="/faculty/upload/material?subject=<%= subject.subjectCode %>"
+                 class="upload-btn btn-upload-mat btn">
+                <i class="bi bi-upload"></i>Material
+              </a>
+              <a href="/faculty/upload/pyq?subject=<%= subject.subjectCode %>"
+                 class="upload-btn btn-upload-pyq btn">
+                <i class="bi bi-file-earmark-plus"></i>PYQ
+              </a>
+            </div>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-12 col-lg-5">
+      <div class="section-heading">
+        <i class="bi bi-clock-history" style="color:#6a1b9a;"></i>Recent Uploads
+      </div>
+
+      <!-- Recent Materials -->
+      <div class="stat-card mb-3">
+        <div class="fw-semibold mb-3 d-flex align-items-center gap-2" style="font-size:0.85rem;color:#333;">
+          <i class="bi bi-file-earmark-text-fill" style="color:#2e7d32;"></i>Study Materials
+        </div>
+        <% if (recentMaterials.length === 0) { %>
+          <div class="text-muted text-center py-3" style="font-size:0.82rem;">No materials uploaded yet</div>
+        <% } else { %>
+          <% recentMaterials.forEach(mat => { %>
+            <div class="recent-item">
+                <div class="recent-icon" style="background:#e8f5e9;color:#2e7d32;">
+                <i class="bi bi-file-earmark-pdf"></i>
+                </div>
+                <div class="flex-grow-1" style="min-width:0;">
+                <a href="/<%= mat.fileUrl %>" target="_blank"
+                    class="fw-semibold text-decoration-none"
+                    style="font-size:0.82rem;color:#1a1a1a;">
+                    <%= mat.title %>
+                    <i class="bi bi-box-arrow-up-right ms-1" style="font-size:0.65rem;color:#aaa;"></i>
+                </a>
+                <div class="text-muted" style="font-size:0.72rem;">
+                    <%= mat.subjectCode %> · Unit <%= mat.unit %>
+                    <% if (user.role === 'admin' && mat.facultyId) { %>
+                    · By <%= mat.facultyId.name %>
+                    <% } %>
+                </div>
+                <div class="text-muted" style="font-size:0.68rem;">
+                    <i class="bi bi-clock me-1"></i>
+                    <%= new Date(mat.uploadedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %>
+                    &nbsp;at&nbsp;
+                    <%= new Date(mat.uploadedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}) %>
+                </div>
+                </div>
+                <form action="/faculty/material/delete/<%= mat._id %>" method="POST"
+                    data-confirm="Delete '<%= mat.title %>'? This cannot be undone.">
+                <button type="submit" class="btn btn-sm"
+                    style="background:#fce4ec;color:#c62828;border:none;border-radius:8px;padding:4px 8px;">
+                    <i class="bi bi-trash"></i>
+                </button>
+                </form>
+            </div>
+            <% }); %>
+        <% } %>
+      </div>
+
+      <!-- Recent PYQs -->
+      <div class="stat-card">
+        <div class="fw-semibold mb-3 d-flex align-items-center gap-2" style="font-size:0.85rem;color:#333;">
+          <i class="bi bi-file-earmark-pdf-fill" style="color:#e65100;"></i>Previous Year Papers
+        </div>
+        <% if (recentPYQs.length === 0) { %>
+          <div class="text-muted text-center py-3" style="font-size:0.82rem;">No PYQs uploaded yet</div>
+        <% } else { %>
+          <% recentPYQs.forEach(pyq => { %>
+            <div class="recent-item">
+                <div class="recent-icon" style="background:#fff3e0;color:#e65100;">
+                <i class="bi bi-file-earmark-pdf"></i>
+                </div>
+                <div class="flex-grow-1" style="min-width:0;">
+                <a href="/<%= pyq.fileUrl %>" target="_blank"
+                    class="fw-semibold text-decoration-none"
+                    style="font-size:0.82rem;color:#1a1a1a;">
+                    <%= pyq.subjectCode %> — <%= pyq.examType %> <%= pyq.year %>
+                    <i class="bi bi-box-arrow-up-right ms-1" style="font-size:0.65rem;color:#aaa;"></i>
+                </a>
+                <div class="text-muted" style="font-size:0.72rem;">
+                    <%= pyq.semesterType %> sem
+                    <% if (user.role === 'admin' && pyq.facultyId) { %>
+                    · By <%= pyq.facultyId.name %>
+                    <% } %>
+                </div>
+                <div class="text-muted" style="font-size:0.68rem;">
+                    <i class="bi bi-clock me-1"></i>
+                    <%= new Date(pyq.uploadedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %>
+                    &nbsp;at&nbsp;
+                    <%= new Date(pyq.uploadedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}) %>
+                </div>
+                </div>
+                <form action="/faculty/pyq/delete/<%= pyq._id %>" method="POST"
+                    data-confirm="Delete this PYQ? This cannot be undone.">
+                <button type="submit" class="btn btn-sm"
+                    style="background:#fce4ec;color:#c62828;border:none;border-radius:8px;padding:4px 8px;">
+                    <i class="bi bi-trash"></i>
+                </button>
+                </form>
+            </div>
+            <% }); %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center text-muted py-4 mt-3" style="font-size:0.75rem;border-top:1px solid #e0e7ff;">
+    SOET Resource Portal &copy; <%= new Date().getFullYear() %> · KR Mangalam University
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>
