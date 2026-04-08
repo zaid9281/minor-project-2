@@ -44,4 +44,25 @@ const redirectIfLoggedIn = (req, res, next) => {
   next();
 };
 
-module.exports = { protect, redirectIfLoggedIn };
+/**
+ * @desc    Grant access to specific roles
+ * @param   {...string} roles - Allowed roles (e.g., 'admin', 'faculty')
+ */
+const authorize = (...roles) => {
+    return (req, res, next) => {
+        // req.user was set in the 'protect' middleware above
+        if (!req.user || !roles.includes(req.user.role)) {
+            return res.status(403).render('error/403', { 
+                message: 'You do not have permission to access this resource' 
+            });
+        }
+        next();
+    };
+};
+
+// Update the Exports
+module.exports = { 
+    protect, 
+    redirectIfLoggedIn, 
+    authorize 
+};
