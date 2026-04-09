@@ -521,11 +521,11 @@ Example: Enrolled 2024, Feb 2026
 
 | Member | Role |
 |--------|------|
-| [Member 1] | Backend Lead & Database Architect |
-| [Member 2] | Authentication & Security Engineer |
-| [Member 3] | Student Portal Developer |
-| [Member 4] | Faculty Portal & Upload System |
-| [Member 5] | Frontend & UX Designer |
+| [Zaid] | Backend Lead & Database Architect |
+| [Aamir, Mankameshwar Mishra] | Authentication & Security Engineer |
+| [Tushar] | Student Portal Developer |
+| [Devi] | Faculty Portal & Upload System |
+| [Hitesh] | Frontend & UX Designer |
 
 **Institution:** KR Mangalam University, Gurugram, Haryana  
 **Department:** School of Engineering & Technology (SOET)  
