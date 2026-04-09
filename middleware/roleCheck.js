@@ -25,4 +25,23 @@ const adminOnly = (req, res, next) => {
   });
 };
 
-module.exports = { studentOnly, facultyOnly, adminOnly };
+// A more flexible way to check roles dynamically
+const checkRole = (...allowedRoles) => {
+    return (req, res, next) => {
+        if (!req.user || !allowedRoles.includes(req.user.role)) {
+            return res.status(403).render('error', {
+                message: `Access denied. Requires one of these roles: ${allowedRoles.join(', ')}`,
+                user: req.user || null
+            });
+        }
+        next();
+    };
+};
+
+// Update the exports to include the new checkRole function
+module.exports = { 
+    studentOnly, 
+    facultyOnly, 
+    adminOnly, 
+    checkRole // Add this!
+};
