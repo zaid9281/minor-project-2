@@ -111,6 +111,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use('/auth', require('./routes/auth'));
 app.use('/student', require('./routes/student'));
 app.use('/faculty', require('./routes/faculty'));
+app.use('/admin', require('./routes/admin'));
 app.use('/notifications', require('./routes/notifications'));
 app.use('/announcements', require('./routes/announcements'));
 app.use('/bookmarks', require('./routes/bookmarks'));
@@ -139,8 +140,13 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start Server ────────────────────────────
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`\n🚀 SOET Portal running at http://localhost:${PORT}`);
-  console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}\n`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`\n🚀 SOET Portal running at http://localhost:${PORT}`);
+    console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}\n`);
+  });
+}
+
+// Export the app for Vercel
+module.exports = app;
