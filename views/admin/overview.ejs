@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Overview - SOET Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="/css/main.css" rel="stylesheet">
+  <style>
+    body { background:#f0f4ff; font-family:'Segoe UI',sans-serif; }
+    .stat-card {
+      background:white; border-radius:16px; padding:22px;
+      border:0.5px solid #e0e7ff;
+      box-shadow:0 2px 12px rgba(0,0,0,0.05);
+      height:100%; transition:transform 0.2s;
+    }
+    .stat-card:hover { transform:translateY(-3px); }
+    .stat-icon {
+      width:50px; height:50px; border-radius:14px;
+      display:flex; align-items:center;
+      justify-content:center; font-size:1.5rem;
+    }
+    .section-card {
+      background:white; border-radius:16px; padding:24px;
+      border:0.5px solid #e0e7ff;
+      box-shadow:0 2px 12px rgba(0,0,0,0.05);
+      margin-bottom:20px;
+    }
+    .section-title {
+      font-size:0.88rem; font-weight:700; color:#555;
+      margin-bottom:16px; display:flex;
+      align-items:center; gap:8px;
+    }
+    .log-row {
+      padding:10px 0; border-bottom:0.5px solid #f5f5f5;
+      display:flex; align-items:center; gap:12px;
+    }
+    .log-row:last-child { border-bottom:none; }
+    .log-avatar {
+      width:34px; height:34px; border-radius:10px;
+      display:flex; align-items:center;
+      justify-content:center; font-size:0.85rem;
+      font-weight:700; flex-shrink:0;
+    }
+    .role-student { background:#eef2ff; color:#003399; }
+    .role-faculty { background:#e8f5e9; color:#2e7d32; }
+    .role-admin { background:#fff3e0; color:#e65100; }
+    .course-bar {
+      height:8px; border-radius:4px;
+      background:linear-gradient(90deg,#003399,#0077ff);
+    }
+  </style>
+</head>
+<body data-authenticated="true">
+
+<%- include('../partials/adminNavbar') %>
+
+<div class="container-fluid px-3 px-md-4 py-4"
+  style="max-width:1300px;margin:0 auto;">
+
+  <div class="d-flex align-items-center
+    justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h4 class="fw-bold mb-1">
+        <i class="bi bi-speedometer2 me-2"
+          style="color:#003399;"></i>Admin Overview
+      </h4>
+      <div class="text-muted" style="font-size:0.82rem;">
+        SOET Portal - KR Mangalam University
+      </div>
+    </div>
+    <div style="font-size:0.82rem;color:#aaa;">
+      <i class="bi bi-clock me-1"></i>
+      <%= new Date().toLocaleDateString('en-IN',
+        {weekday:'long',day:'numeric',month:'long',year:'numeric'}) %>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon mb-3"
+          style="background:#eef2ff;">
+          <i class="bi bi-people-fill"
+            style="color:#003399;"></i>
+        </div>
+        <div style="font-size:2rem;font-weight:800;
+          color:#003399;line-height:1;">
+          <%= stats.activeStudents %>
+        </div>
+        <div style="font-size:0.78rem;color:#888;margin-top:4px;">
+          Active Students
+        </div>
+        <div style="font-size:0.72rem;color:#aaa;margin-top:2px;">
+          <%= stats.totalStudents %> total enrolled
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon mb-3"
+          style="background:#e8f5e9;">
+          <i class="bi bi-person-badge-fill"
+            style="color:#2e7d32;"></i>
+        </div>
+        <div style="font-size:2rem;font-weight:800;
+          color:#2e7d32;line-height:1;">
+          <%= stats.activeFaculty %>
+        </div>
+        <div style="font-size:0.78rem;color:#888;margin-top:4px;">
+          Active Faculty
+        </div>
+        <div style="font-size:0.72rem;color:#aaa;margin-top:2px;">
+          <%= stats.totalFaculty %> total registered
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon mb-3"
+          style="background:#fff3e0;">
+          <i class="bi bi-file-earmark-text-fill"
+            style="color:#e65100;"></i>
+        </div>
+        <div style="font-size:2rem;font-weight:800;
+          color:#e65100;line-height:1;">
+          <%= stats.totalMaterials %>
+        </div>
+        <div style="font-size:0.78rem;color:#888;margin-top:4px;">
+          Study Materials
+        </div>
+        <div style="font-size:0.72rem;color:#aaa;margin-top:2px;">
+          + <%= stats.totalPYQs %> PYQs uploaded
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon mb-3"
+          style="background:#fce4ec;">
+          <i class="bi bi-box-arrow-in-right"
+            style="color:#c62828;"></i>
+        </div>
+        <div style="font-size:2rem;font-weight:800;
+          color:#c62828;line-height:1;">
+          <%= stats.todayLogins %>
+        </div>
+        <div style="font-size:0.78rem;color:#888;margin-top:4px;">
+          Logins Today
+        </div>
+        <div style="font-size:0.72rem;color:#aaa;margin-top:2px;">
+          <%= stats.totalNotifications %> notifications sent
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <div class="col-12 col-lg-5">
+      <div class="section-card">
+        <div class="section-title">
+          <i class="bi bi-bar-chart-fill"
+            style="color:#003399;"></i>
+          Students by Course
+        </div>
+        <% const courseNames = {
+          '0171':'CSE Core','0173':'CSE-AIML',
+          '0175':'CSE-DS','0177':'CSE-FSD',
+          '0179':'CSE-CC','0181':'CSE-UIUX'
+        }; %>
+        <% const maxCount = courseStats.length > 0
+          ? courseStats[0].count : 1; %>
+        <% courseStats.forEach(function(cs) { %>
+          <div style="margin-bottom:14px;">
+            <div class="d-flex justify-content-between mb-1">
+              <span style="font-size:0.82rem;font-weight:600;color:#333;">
+                <%= courseNames[cs._id] || cs._id %>
+              </span>
+              <span style="font-size:0.78rem;color:#888;">
+                <%= cs.count %> students
+              </span>
+            </div>
+            <div style="height:8px;background:#f0f4ff;
+              border-radius:4px;overflow:hidden;">
+              <div class="course-bar"
+                style="width:<%= Math.round((cs.count/maxCount)*100) %>%;">
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">
+          <i class="bi bi-trophy-fill"
+            style="color:#FFB800;"></i>
+          Top Material Uploaders
+        </div>
+        <% topUploaders.forEach(function(u, i) { %>
+          <div class="d-flex align-items-center
+            gap-3 mb-3">
+            <div style="width:28px;height:28px;
+              border-radius:50%;
+              background:<%= i===0?'#FFD700':i===1?'#C0C0C0':'#CD7F32' %>;
+              display:flex;align-items:center;
+              justify-content:center;
+              font-size:0.75rem;font-weight:800;
+              color:white;flex-shrink:0;">
+              <%= i+1 %>
+            </div>
+            <div style="flex-grow:1;">
+              <div style="font-size:0.85rem;
+                font-weight:600;color:#1a1a1a;">
+                <%= u.name %>
+              </div>
+            </div>
+            <span style="background:#eef2ff;color:#003399;
+              font-size:0.75rem;font-weight:700;
+              padding:3px 10px;border-radius:20px;">
+              <%= u.count %> uploads
+            </span>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+      <div class="section-card">
+        <div class="section-title d-flex
+          align-items-center justify-content-between">
+          <span>
+            <i class="bi bi-activity"
+              style="color:#c62828;"></i>
+            Recent Login Activity
+          </span>
+          <a href="/admin/logs"
+            style="font-size:0.78rem;color:#003399;
+              font-weight:600;text-decoration:none;">
+            View all
+          </a>
+        </div>
+        <% recentLogs.forEach(function(log) { %>
+          <div class="log-row">
+            <div class="log-avatar role-<%= log.userRole %>">
+              <%= log.userName.charAt(0).toUpperCase() %>
+            </div>
+            <div style="flex-grow:1;min-width:0;">
+              <div style="font-size:0.85rem;font-weight:600;
+                color:#1a1a1a;white-space:nowrap;
+                overflow:hidden;text-overflow:ellipsis;">
+                <%= log.userName %>
+              </div>
+              <div style="font-size:0.72rem;color:#888;
+                white-space:nowrap;overflow:hidden;
+                text-overflow:ellipsis;">
+                <%= log.userEmail %>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <span style="font-size:0.7rem;font-weight:700;
+                padding:2px 8px;border-radius:6px;
+                background:<%= log.userRole==='student'?'#eef2ff':log.userRole==='admin'?'#fff3e0':'#e8f5e9' %>;
+                color:<%= log.userRole==='student'?'#003399':log.userRole==='admin'?'#e65100':'#2e7d32' %>;">
+                <%= log.userRole %>
+              </span>
+              <div style="font-size:0.68rem;color:#bbb;
+                margin-top:2px;">
+                <%= new Date(log.loginAt).toLocaleDateString(
+                  'en-IN',
+                  {day:'numeric',month:'short'}
+                ) %>
+                at
+                <%= new Date(log.loginAt).toLocaleTimeString(
+                  'en-IN',
+                  {hour:'2-digit',minute:'2-digit',hour12:true}
+                ) %>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+        <% if (recentLogs.length === 0) { %>
+          <div style="text-align:center;padding:32px;
+            color:#bbb;font-size:0.85rem;">
+            No login activity yet
+          </div>
+        <% } %>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">
+          <i class="bi bi-lightning-fill"
+            style="color:#FFB800;"></i>
+          Quick Actions
+        </div>
+        <div class="row g-2">
+          <% [
+            {href:'/admin/students',icon:'bi-people-fill',color:'#003399',bg:'#eef2ff',label:'Manage Students'},
+            {href:'/admin/faculty',icon:'bi-person-badge-fill',color:'#2e7d32',bg:'#e8f5e9',label:'Manage Faculty'},
+            {href:'/admin/faculty/new',icon:'bi-person-plus-fill',color:'#7b1fa2',bg:'#f3e5f5',label:'Add Faculty'},
+            {href:'/admin/logs',icon:'bi-journal-text',color:'#c62828',bg:'#fce4ec',label:'Login Logs'},
+            {href:'/faculty/admin/all-uploads',icon:'bi-shield-fill',color:'#e65100',bg:'#fff3e0',label:'All Uploads'},
+            {href:'/announcements/new',icon:'bi-megaphone-fill',color:'#1565c0',bg:'#e3f2fd',label:'Post Announcement'}
+          ].forEach(function(link) { %>
+            <div class="col-6 col-md-4">
+              <a href="<%= link.href %>"
+                style="background:<%= link.bg %>;
+                  border-radius:12px;padding:14px;
+                  display:flex;align-items:center;gap:10px;
+                  text-decoration:none;transition:all 0.2s;"
+                onmouseover="this.style.opacity='0.85'"
+                onmouseout="this.style.opacity='1'">
+                <i class="bi <%= link.icon %>"
+                  style="color:<%= link.color %>;
+                    font-size:1.2rem;flex-shrink:0;"></i>
+                <span style="font-size:0.82rem;font-weight:600;
+                  color:#1a1a1a;line-height:1.3;">
+                  <%= link.label %>
+                </span>
+              </a>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

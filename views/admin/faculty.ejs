@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Faculty - SOET Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="/css/main.css" rel="stylesheet">
+  <style>
+    body { background:#f0f4ff; font-family:'Segoe UI',sans-serif; }
+    .page-card {
+      background:white; border-radius:16px;
+      border:0.5px solid #e0e7ff;
+      box-shadow:0 2px 12px rgba(0,0,0,0.05);
+      overflow:hidden;
+    }
+    .filter-bar {
+      background:#f8f9ff; padding:16px 20px;
+      border-bottom:0.5px solid #e0e7ff;
+    }
+    .form-control, .form-select {
+      border-radius:8px; border-color:#e0e7ff;
+      font-size:0.85rem; padding:8px 12px;
+    }
+    .table th {
+      font-size:0.72rem; text-transform:uppercase;
+      letter-spacing:0.5px; color:#666; font-weight:700;
+      background:#f8f9ff;
+      border-bottom:0.5px solid #e0e7ff;
+      padding:12px 16px; white-space:nowrap;
+    }
+    .table td {
+      font-size:0.83rem; vertical-align:middle;
+      padding:12px 16px;
+      border-bottom:0.5px solid #f5f5f5;
+    }
+    .table tr:hover td { background:#fafcff; }
+    .badge-active {
+      background:#e8f5e9; color:#2e7d32;
+      font-size:0.7rem; font-weight:700;
+      padding:3px 8px; border-radius:6px;
+    }
+    .badge-inactive {
+      background:#fce4ec; color:#c62828;
+      font-size:0.7rem; font-weight:700;
+      padding:3px 8px; border-radius:6px;
+    }
+    .badge-admin {
+      background:#fff3e0; color:#e65100;
+      font-size:0.7rem; font-weight:700;
+      padding:3px 8px; border-radius:6px;
+    }
+    .emp-tag {
+      background:#f0f4ff; color:#003399;
+      font-size:0.7rem; font-weight:700;
+      padding:2px 8px; border-radius:6px;
+      font-family:monospace;
+    }
+    .action-btn {
+      font-size:0.72rem; font-weight:600;
+      padding:5px 10px; border-radius:7px;
+      border:none; cursor:pointer; white-space:nowrap;
+      display:inline-flex; align-items:center; gap:4px;
+    }
+    .btn-reset { background:#eef2ff; color:#003399; }
+    .btn-deactivate { background:#fce4ec; color:#c62828; }
+    .btn-activate { background:#e8f5e9; color:#2e7d32; }
+  </style>
+</head>
+<body data-authenticated="true">
+
+<%- include('../partials/adminNavbar') %>
+
+<div class="container-fluid px-3 px-md-4 py-4"
+  style="max-width:1300px;margin:0 auto;">
+
+  <% if (success) { %>
+    <div id="page-toast" data-message="<%= success %>"
+      data-type="success" class="d-none"></div>
+  <% } %>
+  <% if (error) { %>
+    <div id="page-toast" data-message="<%= error %>"
+      data-type="error" class="d-none"></div>
+  <% } %>
+
+  <div class="d-flex align-items-center
+    justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h4 class="fw-bold mb-1">
+        <i class="bi bi-person-badge-fill me-2"
+          style="color:#2e7d32;"></i>Manage Faculty
+      </h4>
+      <div class="text-muted" style="font-size:0.82rem;">
+        <%= faculty.length %> faculty members
+      </div>
+    </div>
+    <a href="/admin/faculty/new"
+      style="background:linear-gradient(135deg,#003399,#0055cc);
+        color:white; border:none; border-radius:12px;
+        padding:10px 20px; font-weight:700;
+        font-size:0.88rem; text-decoration:none;
+        display:inline-flex; align-items:center; gap:6px;">
+      <i class="bi bi-person-plus-fill"></i>Add Faculty
+    </a>
+  </div>
+
+  <div class="page-card">
+
+    <div class="filter-bar">
+      <form method="GET" action="/admin/faculty"
+        class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <input type="text" name="search"
+            class="form-control"
+            placeholder="Search name, email, employee ID..."
+            value="<%= filters.search || '' %>">
+        </div>
+        <div class="col-auto">
+          <select name="status" class="form-select">
+            <option value="">All Status</option>
+            <option value="active"
+              <%= filters.status==='active'?'selected':'' %>>
+              Active
+            </option>
+            <option value="inactive"
+              <%= filters.status==='inactive'?'selected':'' %>>
+              Inactive
+            </option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <button type="submit"
+            class="btn btn-sm btn-primary"
+            style="border-radius:8px;padding:8px 16px;">
+            <i class="bi bi-search me-1"></i>Filter
+          </button>
+        </div>
+        <% if (filters.search || filters.status) { %>
+          <div class="col-auto">
+            <a href="/admin/faculty"
+              class="btn btn-sm btn-outline-secondary"
+              style="border-radius:8px;">Clear</a>
+          </div>
+        <% } %>
+      </form>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Faculty</th>
+            <th>Employee ID</th>
+            <th>Designation</th>
+            <th>Uploads</th>
+            <th>Last Login</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (faculty.length === 0) { %>
+            <tr>
+              <td colspan="7"
+                style="text-align:center;padding:40px;color:#bbb;">
+                No faculty found
+              </td>
+            </tr>
+          <% } else { %>
+            <% faculty.forEach(function(f) { %>
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div style="width:34px;height:34px;
+                      border-radius:10px;
+                      background:#eef2ff;
+                      display:flex;align-items:center;
+                      justify-content:center;
+                      font-weight:700;color:#003399;
+                      font-size:0.85rem;flex-shrink:0;">
+                      <%= f.name.charAt(0).toUpperCase() %>
+                    </div>
+                    <div>
+                      <div style="font-weight:600;color:#1a1a1a;
+                        font-size:0.85rem;">
+                        <%= f.name %>
+                        <% if (f.role === 'admin') { %>
+                          <span class="badge-admin ms-1">ADMIN</span>
+                        <% } %>
+                      </div>
+                      <div style="font-size:0.72rem;color:#aaa;">
+                        <%= f.email %>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="emp-tag"><%= f.employeeId %></span>
+                </td>
+                <td style="font-size:0.78rem;color:#555;">
+                  <%= f.designation %>
+                </td>
+                <td>
+                  <span style="font-size:0.78rem;color:#333;">
+                    <i class="bi bi-file-earmark-text me-1"
+                      style="color:#2e7d32;"></i>
+                    <%= f.totalMaterials %>
+                    &nbsp;|&nbsp;
+                    <i class="bi bi-file-earmark-pdf me-1"
+                      style="color:#e65100;"></i>
+                    <%= f.totalPYQs %>
+                  </span>
+                </td>
+                <td style="font-size:0.75rem;color:#888;">
+                  <% if (f.lastLogin) { %>
+                    <%= new Date(f.lastLogin).toLocaleDateString(
+                      'en-IN',
+                      {day:'numeric',month:'short',year:'numeric'}
+                    ) %>
+                  <% } else { %>
+                    <span style="color:#bbb;">Never</span>
+                  <% } %>
+                </td>
+                <td>
+                  <span class="<%= f.isActive ? 'badge-active' : 'badge-inactive' %>">
+                    <%= f.isActive ? 'Active' : 'Inactive' %>
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex gap-1 flex-wrap">
+                    <form
+                      action="/admin/faculty/<%= f._id %>/reset-password"
+                      method="POST"
+                      onsubmit="return confirm('Reset password for <%= f.name %> to Faculty@123?')">
+                      <button type="submit"
+                        class="action-btn btn-reset">
+                        <i class="bi bi-key-fill"></i>Reset
+                      </button>
+                    </form>
+                    <% if (f._id.toString() !== user.id) { %>
+                      <form
+                        action="/admin/faculty/<%= f._id %>/toggle"
+                        method="POST"
+                        onsubmit="return confirm('<%= f.isActive ? 'Deactivate' : 'Activate' %> <%= f.name %>?')">
+                        <button type="submit"
+                          class="action-btn <%= f.isActive ? 'btn-deactivate' : 'btn-activate' %>">
+                          <i class="bi bi-<%= f.isActive ? 'person-x' : 'person-check' %>"></i>
+                          <%= f.isActive ? 'Deactivate' : 'Activate' %>
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

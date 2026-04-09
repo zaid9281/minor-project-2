@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const fetch = require('node-fetch');
 const Faculty = require('../models/Faculty');
 const Student = require('../models/Student');
+const LoginLog = require('../models/LoginLog');
 const { redirectIfLoggedIn } = require('../middleware/auth');
 
 // ─────────────────────────────────────
@@ -85,6 +86,17 @@ router.post('/login', async (req, res) => {
       employeeId: faculty.employeeId,
       designation: faculty.designation,
     });
+
+    // Log successful login without blocking response flow
+    LoginLog.create({
+      userId: faculty._id,
+      userRole: faculty.role,
+      userName: faculty.name,
+      userEmail: faculty.email,
+      loginAt: new Date(),
+      ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+      userAgent: req.headers['user-agent'] || 'unknown'
+    }).catch((logErr) => console.error('Login log error:', logErr));
 
     return res.redirect('/faculty/dashboard');
 
@@ -207,6 +219,17 @@ router.get('/azure/callback', async (req, res) => {
       enrollmentYear: student.enrollmentYear,
       section: student.section,
     });
+
+    // Log successful login without blocking response flow
+    LoginLog.create({
+      userId: student._id,
+      userRole: 'student',
+      userName: student.name,
+      userEmail: student.email,
+      loginAt: new Date(),
+      ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+      userAgent: req.headers['user-agent'] || 'unknown'
+    }).catch((logErr) => console.error('Login log error:', logErr));
 
     return res.redirect('/student/dashboard');
 
