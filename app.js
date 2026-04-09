@@ -12,6 +12,9 @@ const connectDB = require('./config/db');
 
 const app = express();
 
+// Trust the first proxy hop (Railway/Vercel/Nginx), so req.ip and secure cookies behave correctly.
+app.set('trust proxy', 1);
+
 // ─── Connect Database ───────────────────────
 connectDB();
 
@@ -140,13 +143,18 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start Server ────────────────────────────
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`\n🚀 SOET Portal running at http://localhost:${PORT}`);
+// Start a real HTTP server for normal Node environments (local, Railway, etc).
+// Vercel runs this as a serverless function and should not call app.listen.
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = '0.0.0.0';
+const isVercel = Boolean(process.env.VERCEL);
+
+if (!isVercel) {
+  app.listen(PORT, HOST, () => {
+    console.log(`\n🚀 SOET Portal running on ${HOST}:${PORT}`);
     console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}\n`);
   });
 }
 
-// Export the app for Vercel
+// Export app for serverless runtimes and tests.
 module.exports = app;
