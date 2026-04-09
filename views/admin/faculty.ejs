@@ -239,10 +239,11 @@
                       </button>
                     </form>
                     <% if (f._id.toString() !== user.id) { %>
+                      <% const facultyActionLabel = f.isActive ? 'Deactivate' : 'Activate'; %>
                       <form
                         action="/admin/faculty/<%= f._id %>/toggle"
                         method="POST"
-                        onsubmit="return confirm('<%= f.isActive ? 'Deactivate' : 'Activate' %> <%= f.name %>?')">
+                        onsubmit='return confirm("<%= facultyActionLabel %> <%= f.name %>?")'>
                         <button type="submit"
                           class="action-btn <%= f.isActive ? 'btn-deactivate' : 'btn-activate' %>">
                           <i class="bi bi-<%= f.isActive ? 'person-x' : 'person-check' %>"></i>

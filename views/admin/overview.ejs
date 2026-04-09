@@ -50,6 +50,44 @@
       height:8px; border-radius:4px;
       background:linear-gradient(90deg,#003399,#0077ff);
     }
+    .rank-badge {
+      width:28px; height:28px;
+      border-radius:50%;
+      display:flex; align-items:center;
+      justify-content:center;
+      font-size:0.75rem; font-weight:800;
+      color:white; flex-shrink:0;
+    }
+    .rank-1 { background:#FFD700; }
+    .rank-2 { background:#C0C0C0; }
+    .rank-3 { background:#CD7F32; }
+    .rank-other { background:#8e9ab8; }
+    .role-pill {
+      font-size:0.7rem; font-weight:700;
+      padding:2px 8px; border-radius:6px;
+    }
+    .role-pill.role-student { background:#eef2ff; color:#003399; }
+    .role-pill.role-faculty { background:#e8f5e9; color:#2e7d32; }
+    .role-pill.role-admin { background:#fff3e0; color:#e65100; }
+    .quick-card {
+      border-radius:12px; padding:14px;
+      display:flex; align-items:center; gap:10px;
+      text-decoration:none; transition:all 0.2s;
+    }
+    .quick-card:hover { opacity:0.85; }
+    .quick-icon { font-size:1.2rem; flex-shrink:0; }
+    .quick-bg-1 { background:#eef2ff; }
+    .quick-bg-2 { background:#e8f5e9; }
+    .quick-bg-3 { background:#f3e5f5; }
+    .quick-bg-4 { background:#fce4ec; }
+    .quick-bg-5 { background:#fff3e0; }
+    .quick-bg-6 { background:#e3f2fd; }
+    .quick-icon-1 { color:#003399; }
+    .quick-icon-2 { color:#2e7d32; }
+    .quick-icon-3 { color:#7b1fa2; }
+    .quick-icon-4 { color:#c62828; }
+    .quick-icon-5 { color:#e65100; }
+    .quick-icon-6 { color:#1565c0; }
   </style>
 </head>
 <body data-authenticated="true">
@@ -185,7 +223,7 @@
             <div style="height:8px;background:#f0f4ff;
               border-radius:4px;overflow:hidden;">
               <div class="course-bar"
-                style="width:<%= Math.round((cs.count/maxCount)*100) %>%;">
+                data-width="<%= Math.round((cs.count/maxCount)*100) %>">
               </div>
             </div>
           </div>
@@ -201,13 +239,7 @@
         <% topUploaders.forEach(function(u, i) { %>
           <div class="d-flex align-items-center
             gap-3 mb-3">
-            <div style="width:28px;height:28px;
-              border-radius:50%;
-              background:<%= i===0?'#FFD700':i===1?'#C0C0C0':'#CD7F32' %>;
-              display:flex;align-items:center;
-              justify-content:center;
-              font-size:0.75rem;font-weight:800;
-              color:white;flex-shrink:0;">
+            <div class="rank-badge <%= i===0 ? 'rank-1' : i===1 ? 'rank-2' : i===2 ? 'rank-3' : 'rank-other' %>">
               <%= i+1 %>
             </div>
             <div style="flex-grow:1;">
@@ -259,10 +291,7 @@
               </div>
             </div>
             <div style="text-align:right;flex-shrink:0;">
-              <span style="font-size:0.7rem;font-weight:700;
-                padding:2px 8px;border-radius:6px;
-                background:<%= log.userRole==='student'?'#eef2ff':log.userRole==='admin'?'#fff3e0':'#e8f5e9' %>;
-                color:<%= log.userRole==='student'?'#003399':log.userRole==='admin'?'#e65100':'#2e7d32' %>;">
+              <span class="role-pill role-<%= log.userRole %>">
                 <%= log.userRole %>
               </span>
               <div style="font-size:0.68rem;color:#bbb;
@@ -296,24 +325,17 @@
         </div>
         <div class="row g-2">
           <% [
-            {href:'/admin/students',icon:'bi-people-fill',color:'#003399',bg:'#eef2ff',label:'Manage Students'},
-            {href:'/admin/faculty',icon:'bi-person-badge-fill',color:'#2e7d32',bg:'#e8f5e9',label:'Manage Faculty'},
-            {href:'/admin/faculty/new',icon:'bi-person-plus-fill',color:'#7b1fa2',bg:'#f3e5f5',label:'Add Faculty'},
-            {href:'/admin/logs',icon:'bi-journal-text',color:'#c62828',bg:'#fce4ec',label:'Login Logs'},
-            {href:'/faculty/admin/all-uploads',icon:'bi-shield-fill',color:'#e65100',bg:'#fff3e0',label:'All Uploads'},
-            {href:'/announcements/new',icon:'bi-megaphone-fill',color:'#1565c0',bg:'#e3f2fd',label:'Post Announcement'}
+            {href:'/admin/students',icon:'bi-people-fill',bgClass:'quick-bg-1',iconClass:'quick-icon-1',label:'Manage Students'},
+            {href:'/admin/faculty',icon:'bi-person-badge-fill',bgClass:'quick-bg-2',iconClass:'quick-icon-2',label:'Manage Faculty'},
+            {href:'/admin/faculty/new',icon:'bi-person-plus-fill',bgClass:'quick-bg-3',iconClass:'quick-icon-3',label:'Add Faculty'},
+            {href:'/admin/logs',icon:'bi-journal-text',bgClass:'quick-bg-4',iconClass:'quick-icon-4',label:'Login Logs'},
+            {href:'/faculty/admin/all-uploads',icon:'bi-shield-fill',bgClass:'quick-bg-5',iconClass:'quick-icon-5',label:'All Uploads'},
+            {href:'/announcements/new',icon:'bi-megaphone-fill',bgClass:'quick-bg-6',iconClass:'quick-icon-6',label:'Post Announcement'}
           ].forEach(function(link) { %>
             <div class="col-6 col-md-4">
               <a href="<%= link.href %>"
-                style="background:<%= link.bg %>;
-                  border-radius:12px;padding:14px;
-                  display:flex;align-items:center;gap:10px;
-                  text-decoration:none;transition:all 0.2s;"
-                onmouseover="this.style.opacity='0.85'"
-                onmouseout="this.style.opacity='1'">
-                <i class="bi <%= link.icon %>"
-                  style="color:<%= link.color %>;
-                    font-size:1.2rem;flex-shrink:0;"></i>
+                class="quick-card <%= link.bgClass %>">
+                <i class="bi <%= link.icon %> quick-icon <%= link.iconClass %>"></i>
                 <span style="font-size:0.82rem;font-weight:600;
                   color:#1a1a1a;line-height:1.3;">
                   <%= link.label %>
@@ -328,6 +350,13 @@
   </div>
 </div>
 
+<script>
+  document.querySelectorAll('.course-bar[data-width]').forEach(function (bar) {
+    const width = Number(bar.getAttribute('data-width'));
+    const safeWidth = Number.isFinite(width) ? Math.max(0, Math.min(100, width)) : 0;
+    bar.style.width = safeWidth + '%';
+  });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/js/main.js"></script>
 </body>
