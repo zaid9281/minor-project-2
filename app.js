@@ -122,6 +122,9 @@ app.use('/ratings', require('./routes/ratings'));
 app.use('/forum', require('./routes/forum'));
 app.use('/bulk', require('./routes/bulk'));
 
+// ─── Ignore Favicon Requests ────────────────
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // ─── Root Redirect ───────────────────────────
 app.get('/', (req, res) => res.redirect('/auth/landing'));
 

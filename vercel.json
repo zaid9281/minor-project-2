@@ -5,11 +5,23 @@
       "src": "app.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["views/**"]
+        "includeFiles": ["views/**", "public/**"]
       }
     }
   ],
   "routes": [
+    {
+      "src": "/css/(.*)",
+      "dest": "/public/css/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/public/favicon.ico"
+    },
     {
       "src": "/(.*)",
       "dest": "/app.js"
