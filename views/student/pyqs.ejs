@@ -46,6 +46,8 @@
       font-size: 0.72rem;
       font-weight: 700;
     }
+    .exam-badge.end { background:#fce4ec;color:#c62828; }
+    .exam-badge.mst { background:#fff3e0;color:#e65100; }
     .filter-card {
       background: white;
       border-radius: 14px;
@@ -153,7 +155,7 @@
         <div class="flex-grow-1">
           <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
             <span class="year-badge"><%= pyq.year %></span>
-            <span class="exam-badge" style="background:<%= pyq.examType==='EndSem'?'#fce4ec':'#fff3e0' %>;color:<%= pyq.examType==='EndSem'?'#c62828':'#e65100' %>">
+            <span class="exam-badge <%= pyq.examType==='EndSem' ? 'end' : 'mst' %>">
               <%= pyq.examType %>
             </span>
             <span class="exam-badge" style="background:#f3e5f5;color:#6a1b9a;text-transform:capitalize;">

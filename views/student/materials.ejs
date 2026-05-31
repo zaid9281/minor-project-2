@@ -191,12 +191,9 @@
           </div>
           <button class="btn btn-sm"
             id="rate-btn-<%= mat._id %>"
-            onclick="openRatingModal('<%= mat._id %>',
-              '<%= mat.title.replace(/'/g, "\\'") %>',
-              window._myRatings && window._myRatings['<%= mat._id %>']
-                ? window._myRatings['<%= mat._id %>'].stars : 0,
-              window._myRatings && window._myRatings['<%= mat._id %>']
-                ? window._myRatings['<%= mat._id %>'].comment : '')"
+            data-material-id="<%= mat._id %>"
+            data-material-title="<%= mat.title.replace(/\"/g,'&quot;') %>"
+            onclick="openRatingFromBtn(this)"
             style="background:#f5f5f5;color:#666;border:none;border-radius:8px;font-size:0.75rem;font-weight:600;padding:6px 12px;width:100%;">
             <i class="bi bi-star me-1"></i>Rate this
           </button>
@@ -260,6 +257,17 @@
     } catch(e) {}
   }
 
+  // Helper to open rating modal from simplified button
+  function openRatingFromBtn(btn) {
+    var id = btn.getAttribute('data-material-id');
+    var title = btn.getAttribute('data-material-title') || '';
+    var myR = window._myRatings && window._myRatings[id];
+    var stars = myR ? myR.stars : 0;
+    var comment = myR ? myR.comment : '';
+    // existing openRatingModal is used elsewhere; call it with resolved values
+    openRatingModal(id, title, stars, comment);
+  }
+
   // Load ratings for this subject
   window._myRatings = {};
 
@@ -301,6 +309,33 @@
   
 </script>
 
+<script>
+  // Attach click/hover handlers to rating stars (avoids inline EJS in attributes)
+  (function(){
+    var starsContainer = document.getElementById('rating-stars');
+    if (!starsContainer) return;
+    starsContainer.addEventListener('click', function(e){
+      var t = e.target;
+      if (t && t.classList.contains('star')) {
+        var v = parseInt(t.getAttribute('data-star')||0,10);
+        if (window.RatingSystem && typeof window.RatingSystem.setStars === 'function') {
+          window.RatingSystem.setStars(v);
+        }
+      }
+    });
+    starsContainer.addEventListener('mouseover', function(e){
+      var t = e.target;
+      if (t && t.classList.contains('star') && window.RatingSystem && typeof window.RatingSystem.hover === 'function') {
+        var v = parseInt(t.getAttribute('data-star')||0,10);
+        window.RatingSystem.hover(v);
+      }
+    });
+    starsContainer.addEventListener('mouseout', function(e){
+      if (window.RatingSystem && typeof window.RatingSystem.hoverOut === 'function') window.RatingSystem.hoverOut();
+    });
+  })();
+</script>
+
 <!-- Rating Modal -->
 <div class="rating-modal-overlay" id="rating-modal-overlay"
   onclick="if(event.target===this) RatingSystem.close()">
@@ -325,10 +360,7 @@
     <div class="text-center mb-3">
       <div class="star-rating justify-content-center mb-2" id="rating-stars">
         <% for(let s = 1; s <= 5; s++) { %>
-          <span class="star"
-            onclick="RatingSystem.setStars(<%= s %>)"
-            onmouseover="RatingSystem.hover(<%= s %>)"
-            onmouseout="RatingSystem.hoverOut()">★</span>
+          <span class="star" data-star="<%= s %>">★</span>
         <% } %>
       </div>
       <div id="rating-label"
