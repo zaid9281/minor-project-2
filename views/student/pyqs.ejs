@@ -174,9 +174,12 @@
         </div>
         <div class="d-flex gap-2 flex-shrink-0">
           <a href="/<%= pyq.fileUrl %>" target="_blank"
-            class="btn btn-sm fw-semibold"
-            style="background:#7b1fa2;color:white;border:none;border-radius:8px;white-space:nowrap;"
-            onclick="trackDownload('<%= pyq._id %>','pyq','<%= subject.subjectCode %>','<%= pyq.facultyId ? pyq.facultyId._id : '' %>')">
+            class="btn btn-sm fw-semibold download-link"
+            data-item-id="<%= pyq._id %>"
+            data-item-type="pyq"
+            data-subject-code="<%= subject.subjectCode %>"
+            data-faculty-id="<%= pyq.facultyId ? pyq.facultyId._id : '' %>"
+            style="background:#7b1fa2;color:white;border:none;border-radius:8px;white-space:nowrap;">
             <i class="bi bi-download me-1"></i>Download
           </a>
           <button
@@ -208,6 +211,17 @@
       body: JSON.stringify({ itemId: itemId, itemType: itemType, subjectCode: subjectCode, facultyId: facultyId })
     }).catch(function() {});
   }
+
+  document.querySelectorAll('.download-link').forEach(function(link) {
+    link.addEventListener('click', function() {
+      trackDownload(
+        this.getAttribute('data-item-id'),
+        this.getAttribute('data-item-type'),
+        this.getAttribute('data-subject-code'),
+        this.getAttribute('data-faculty-id') || ''
+      );
+    });
+  });
 
   fetch('/bookmarks/ids')
     .then(function(r){ return r.json(); })

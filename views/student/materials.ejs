@@ -177,9 +177,12 @@
         <div class="d-flex flex-column gap-2 flex-shrink-0">
           <div class="d-flex gap-2">
             <a href="/<%= mat.fileUrl %>" target="_blank"
-              class="btn btn-sm"
-                style="background:#eef2ff;color:var(--krmu-blue);border:none;border-radius:8px;font-weight:600;white-space:nowrap;"
-                onclick="trackDownload('<%= mat._id %>','material','<%= subject.subjectCode %>','<%= mat.facultyId ? mat.facultyId._id : '' %>')">
+              class="btn btn-sm download-link"
+              data-item-id="<%= mat._id %>"
+              data-item-type="material"
+              data-subject-code="<%= subject.subjectCode %>"
+              data-faculty-id="<%= mat.facultyId ? mat.facultyId._id : '' %>"
+              style="background:#eef2ff;color:var(--krmu-blue);border:none;border-radius:8px;font-weight:600;white-space:nowrap;">
               <i class="bi bi-download me-1"></i>Download
             </a>
             <button class="btn btn-sm bookmark-btn"
@@ -225,6 +228,17 @@
       body: JSON.stringify({ itemId: itemId, itemType: itemType, subjectCode: subjectCode, facultyId: facultyId })
     }).catch(function() {});
   }
+
+  document.querySelectorAll('.download-link').forEach(function(link) {
+    link.addEventListener('click', function() {
+      trackDownload(
+        this.getAttribute('data-item-id'),
+        this.getAttribute('data-item-type'),
+        this.getAttribute('data-subject-code'),
+        this.getAttribute('data-faculty-id') || ''
+      );
+    });
+  });
 
   // Load bookmark state for all materials on page
   fetch('/bookmarks/ids')
