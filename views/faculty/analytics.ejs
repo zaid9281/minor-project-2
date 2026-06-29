@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics — SOET Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="/css/main.css" rel="stylesheet">
+  <style>
+    body { background:#f0f4ff; font-family:'Segoe UI',sans-serif; }
+    .stat-card { background:white; border-radius:16px; padding:22px; border:0.5px solid #e0e7ff; box-shadow:0 2px 12px rgba(0,0,0,0.05); height:100%; transition:transform 0.2s; }
+    .stat-card:hover { transform:translateY(-3px); }
+    .stat-icon { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
+    .section-card { background:white; border-radius:16px; padding:24px; border:0.5px solid #e0e7ff; box-shadow:0 2px 12px rgba(0,0,0,0.05); margin-bottom:20px; }
+    .section-title { font-size:0.9rem; font-weight:700; color:#333; margin-bottom:16px; display:flex; align-items:center; gap:8px; padding-bottom:12px; border-bottom:0.5px solid #f0f0f0; }
+    .subject-bar-wrap { margin-bottom:14px; }
+    .subject-bar-label { display:flex; justify-content:space-between; margin-bottom:5px; }
+    .subject-bar-name { font-size:0.82rem; font-weight:600; color:#333; }
+    .subject-bar-count { font-size:0.78rem; color:#888; }
+    .bar-track { height:10px; background:#f0f4ff; border-radius:5px; overflow:hidden; }
+    .bar-fill { height:100%; border-radius:5px; background:linear-gradient(90deg,#003399,#0077ff); transition:width 1s ease; }
+    .chart-bar-wrap { display:flex; align-items:flex-end; gap:8px; height:120px; padding-bottom:0; }
+    .chart-bar-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:4px; }
+    .chart-bar { width:100%; border-radius:6px 6px 0 0; background:linear-gradient(180deg,#0055cc,#003399); min-height:4px; transition:height 1s ease; }
+    .chart-bar-label { font-size:0.65rem; color:#888; text-align:center; white-space:nowrap; }
+    .chart-bar-count { font-size:0.68rem; font-weight:700; color:#003399; }
+    .top-mat-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:0.5px solid #f5f5f5; }
+    .top-mat-row:last-child { border-bottom:none; }
+    .top-rank { width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0; }
+    .rating-star { color:#FFB800; font-size:0.85rem; }
+    .rating-star.empty { color:#e0e0e0; }
+    .gap-tag { background:#fce4ec; color:#c62828; font-size:0.72rem; font-weight:600; padding:3px 10px; border-radius:6px; }
+    .forum-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:0.5px solid #f5f5f5; }
+    .forum-row:last-child { border-bottom:none; }
+    .unresolved-badge { background:#fce4ec; color:#c62828; font-size:0.72rem; font-weight:700; padding:3px 8px; border-radius:6px; }
+    .resolved-badge { background:#e8f5e9; color:#2e7d32; font-size:0.72rem; font-weight:700; padding:3px 8px; border-radius:6px; }
+    .timeline-item { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:0.5px solid #f5f5f5; }
+    .timeline-item:last-child { border-bottom:none; }
+  </style>
+</head>
+<body data-authenticated="true">
+
+<%- include('../partials/facultyNavbar') %>
+
+<div class="container-fluid px-3 px-md-4 py-4" style="max-width:1300px;margin:0 auto;">
+
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h4 class="fw-bold mb-1"><i class="bi bi-bar-chart-fill me-2" style="color:#003399;"></i><%= user.role === 'admin' ? 'Portal Analytics' : 'My Analytics' %></h4>
+      <div class="text-muted" style="font-size:0.82rem;"><%= user.role === 'admin' ? 'Complete analytics across all faculty and subjects' : 'Your upload performance and student engagement' %></div>
+    </div>
+    <a href="/faculty/dashboard" style="background:white;color:#003399;border:2px solid #e0e7ff;border-radius:10px;padding:8px 18px;font-weight:600;font-size:0.85rem;text-decoration:none;">
+      <i class="bi bi-arrow-left me-1"></i>Dashboard
+    </a>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon mb-3" style="background:#eef2ff;"><i class="bi bi-file-earmark-text-fill" style="color:#003399;"></i></div><div style="font-size:2rem;font-weight:800;color:#003399;line-height:1;"><%= stats.totalMaterials %></div><div style="font-size:0.78rem;color:#888;margin-top:4px;">Materials Uploaded</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon mb-3" style="background:#f3e5f5;"><i class="bi bi-file-earmark-pdf-fill" style="color:#7b1fa2;"></i></div><div style="font-size:2rem;font-weight:800;color:#7b1fa2;line-height:1;"><%= stats.totalPYQs %></div><div style="font-size:0.78rem;color:#888;margin-top:4px;">PYQs Uploaded</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon mb-3" style="background:#e8f5e9;"><i class="bi bi-download" style="color:#2e7d32;"></i></div><div style="font-size:2rem;font-weight:800;color:#2e7d32;line-height:1;"><%= stats.totalDownloads %></div><div style="font-size:0.78rem;color:#888;margin-top:4px;">Total Downloads</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon mb-3" style="background:#fff3e0;"><i class="bi bi-journal-richtext" style="color:#e65100;"></i></div><div style="font-size:2rem;font-weight:800;color:#e65100;line-height:1;"><%= stats.totalSubjects %></div><div style="font-size:0.78rem;color:#888;margin-top:4px;">Subjects Assigned</div></div></div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-7">
+      <div class="section-card">
+        <div class="section-title"><i class="bi bi-graph-up" style="color:#003399;"></i>Downloads — Last 7 Days</div>
+        <% const maxDay = Math.max(...last7Days.map(d => d.count), 1); %>
+        <div class="chart-bar-wrap"><% last7Days.forEach(function(day) { %><div class="chart-bar-item"><div class="chart-bar-count"><%= day.count > 0 ? day.count : '' %></div><div class="chart-bar" style="height:<%= Math.max(Math.round((day.count/maxDay)*100), day.count > 0 ? 8 : 4) %>px;background:<%= day.count > 0 ? 'linear-gradient(180deg,#0055cc,#003399)' : '#e0e7ff' %>;"></div><div class="chart-bar-label"><%= day.date %></div></div><% }); %></div>
+        <div style="margin-top:12px;font-size:0.75rem;color:#aaa;text-align:center;">Total: <%= last7Days.reduce(function(s,d) { return s+d.count; }, 0) %> downloads in the last 7 days</div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="bi bi-calendar2-week-fill" style="color:#2e7d32;"></i>Upload Activity Timeline</div>
+        <% if (uploadTimeline.length === 0) { %>
+          <div style="text-align:center;padding:24px;color:#bbb;font-size:0.85rem;">No uploads yet</div>
+        <% } else { %>
+          <% uploadTimeline.forEach(function(day) { %>
+            <div class="timeline-item">
+              <div style="font-size:0.82rem;font-weight:600;color:#333;"><%= day.date %></div>
+              <div style="font-size:0.78rem;color:#2e7d32;font-weight:700;"><%= day.count %> upload<%= day.count !== 1 ? 's' : '' %></div>
+            </div>
+          <% }); %>
+        <% } %>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="bi bi-bar-chart-fill" style="color:#2e7d32;"></i>Downloads by Subject</div>
+        <% if (downloadsBySubject.length === 0) { %>
+          <div style="text-align:center;padding:24px;color:#bbb;font-size:0.85rem;">No downloads tracked yet</div>
+        <% } else { %>
+          <% const maxDl = downloadsBySubject[0].totalDownloads || 1; %>
+          <% downloadsBySubject.slice(0,8).forEach(function(d) { %>
+            <div class="subject-bar-wrap">
+              <div class="subject-bar-label"><span class="subject-bar-name"><%= d._id %><span style="font-weight:400;color:#888;font-size:0.75rem;"> · <%= subjectNameMap[d._id] || '' %></span></span><span class="subject-bar-count"><%= d.totalDownloads %> downloads</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:<%= Math.round((d.totalDownloads/maxDl)*100) %>%;"></div></div>
+              <div style="font-size:0.7rem;color:#aaa;margin-top:3px;">Materials: <%= d.materialDownloads %> &nbsp;·&nbsp; PYQs: <%= d.pyqDownloads %></div>
+            </div>
+          <% }); %>
+        <% } %>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="bi bi-chat-dots-fill" style="color:#7b1fa2;"></i>Forum Activity on Your Subjects</div>
+        <% if (forumActivity.length === 0) { %>
+          <div style="text-align:center;padding:24px;color:#bbb;font-size:0.85rem;">No forum activity yet</div>
+        <% } else { %>
+          <% forumActivity.forEach(function(f) { %>
+            <div class="forum-row">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;color:#1a1a1a;"><%= f._id %> <span style="font-size:0.75rem;color:#888;font-weight:400;"><%= subjectNameMap[f._id] || '' %></span></div>
+                <div style="font-size:0.72rem;color:#aaa;margin-top:2px;"><%= f.totalPosts %> total question<%= f.totalPosts !== 1 ? 's' : '' %></div>
+              </div>
+              <div class="d-flex gap-2">
+                <% if (f.unresolvedPosts > 0) { %><span class="unresolved-badge"><%= f.unresolvedPosts %> unresolved</span><% } else { %><span class="resolved-badge">All resolved ✓</span><% } %>
+                <a href="/forum/<%= f._id %>" style="font-size:0.75rem;color:#003399;font-weight:600;text-decoration:none;">View →</a>
+              </div>
+            </div>
+          <% }); %>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <div class="section-card">
+        <div class="section-title"><i class="bi bi-trophy-fill" style="color:#FFB800;"></i>Top Downloaded Materials</div>
+        <% if (topMaterials.length === 0) { %>
+          <div style="text-align:center;padding:24px;color:#bbb;font-size:0.85rem;">No downloads yet</div>
+        <% } else { %>
+          <% topMaterials.forEach(function(mat, i) { %>
+            <div class="top-mat-row">
+              <div class="top-rank" style="background:<%= i===0?'#FFF9C4':i===1?'#F5F5F5':'#FBE9E7' %>;color:<%= i===0?'#F57F17':i===1?'#616161':'#BF360C' %>;"><%= i + 1 %></div>
+              <div style="flex-grow:1;min-width:0;"><div style="font-size:0.83rem;font-weight:600;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%= mat.title %></div><div style="font-size:0.72rem;color:#888;"><%= mat.subjectCode %> · Unit <%= mat.unit %></div></div>
+              <span style="background:#e8f5e9;color:#2e7d32;font-size:0.72rem;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;"><i class="bi bi-download me-1"></i><%= mat.downloads %></span>
+            </div>
+          <% }); %>
+        <% } %>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="bi bi-star-fill" style="color:#FFB800;"></i>Student Ratings by Subject</div>
+        <% if (ratingsPerSubject.length === 0) { %>
+          <div style="text-align:center;padding:24px;color:#bbb;font-size:0.85rem;">No ratings received yet</div>
+        <% } else { %>
+          <% ratingsPerSubject.forEach(function(r) { %>
+            <div style="margin-bottom:14px;">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <div><span style="font-size:0.82rem;font-weight:600;color:#333;"><%= r._id %></span><span style="font-size:0.72rem;color:#888;margin-left:6px;"><%= subjectNameMap[r._id] || '' %></span></div>
+                <span style="font-size:0.75rem;color:#aaa;"><%= r.totalRatings %> rating<%= r.totalRatings !== 1 ? 's' : '' %></span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <div>
+                  <% const filled = Math.round(r.avgStars); %>
+                  <% for(let s=1;s<=5;s++) { %><span class="rating-star <%= s<=filled?'':'empty' %>">★</span><% } %>
+                </div>
+                <span style="font-size:0.85rem;font-weight:700;color:#333;"><%= Math.round(r.avgStars * 10) / 10 %></span>
+              </div>
+            </div>
+          <% }); %>
+        <% } %>
+      </div>
+
+      <% if (subjectsWithoutMaterials.length > 0) { %>
+        <div class="section-card" style="border-color:#ffcdd2;">
+          <div class="section-title" style="color:#c62828;"><i class="bi bi-exclamation-triangle-fill" style="color:#c62828;"></i>Coverage Gaps</div>
+          <div style="font-size:0.82rem;color:#555;margin-bottom:12px;line-height:1.5;">These subjects have no study materials uploaded yet:</div>
+          <div class="d-flex flex-wrap gap-2">
+            <% subjectsWithoutMaterials.forEach(function(code) { %>
+              <div><span class="gap-tag"><%= code %></span><a href="/faculty/upload/material?subject=<%= code %>" style="font-size:0.72rem;color:#003399;font-weight:600;text-decoration:none;margin-left:4px;">Upload →</a></div>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="section-card">
+        <div class="section-title"><i class="bi bi-grid-3x3-gap-fill" style="color:#003399;"></i>Unit Coverage</div>
+        <%
+          const unitMap = {};
+          unitCoverage.forEach(function(u) {
+            if (!unitMap[u._id.subjectCode]) {
+              unitMap[u._id.subjectCode] = {};
+            }
+            unitMap[u._id.subjectCode][u._id.unit] = u.count;
+          });
+          const covSubjects = Object.keys(unitMap).slice(0, 6);
+        %>
+        <% if (covSubjects.length === 0) { %>
+          <div style="text-align:center;padding:24px;color:#bbb;font-size:0.85rem;">No materials uploaded yet</div>
+        <% } else { %>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:separate;border-spacing:4px;">
+              <thead>
+                <tr>
+                  <th style="font-size:0.68rem;color:#aaa;text-align:left;padding:4px 6px;white-space:nowrap;">Subject</th>
+                  <% [1,2,3,4,5,6].forEach(function(u) { %><th style="font-size:0.68rem;color:#aaa;text-align:center;padding:4px;white-space:nowrap;">U<%= u %></th><% }); %>
+                </tr>
+              </thead>
+              <tbody>
+                <% covSubjects.forEach(function(code) { %>
+                  <tr>
+                    <td style="font-size:0.72rem;font-weight:600;color:#333;padding:4px 6px;white-space:nowrap;"><%= code %></td>
+                    <% [1,2,3,4,5,6].forEach(function(u) { %>
+                      <% const cnt = unitMap[code][u] || 0; %>
+                      <td style="text-align:center;padding:4px;">
+                        <div title="<%= cnt %> file<%= cnt !== 1 ? 's' : '' %>" style="width:28px;height:28px;border-radius:6px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;background:<%= cnt===0?'#f5f5f5':cnt===1?'#b3d4f7':cnt<=3?'#5b9bd4':'#003399' %>;color:<%= cnt===0?'#ddd':cnt<=1?'#003399':'white' %>;">
+                          <%= cnt > 0 ? cnt : '' %>
+                        </div>
+                      </td>
+                    <% }); %>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap;font-size:0.7rem;color:#888;">
+            <span><span style="display:inline-block;width:12px;height:12px;background:#f5f5f5;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>None</span>
+            <span><span style="display:inline-block;width:12px;height:12px;background:#b3d4f7;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>1 file</span>
+            <span><span style="display:inline-block;width:12px;height:12px;background:#5b9bd4;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>2–3 files</span>
+            <span><span style="display:inline-block;width:12px;height:12px;background:#003399;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>4+ files</span>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center text-muted py-3 mt-2" style="font-size:0.75rem;border-top:1px solid #e0e7ff;">SOET Resource Portal &copy; <%= new Date().getFullYear() %> · KR Mangalam University</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

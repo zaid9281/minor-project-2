@@ -114,6 +114,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use('/auth', require('./routes/auth'));
 app.use('/student', require('./routes/student'));
 app.use('/faculty', require('./routes/faculty'));
+app.use('/analytics', require('./routes/analytics'));
 app.use('/admin', require('./routes/admin'));
 app.use('/notifications', require('./routes/notifications'));
 app.use('/announcements', require('./routes/announcements'));

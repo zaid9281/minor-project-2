@@ -10,6 +10,7 @@ const SubjectFacultyMap = require('../models/SubjectFacultyMap');
 const Faculty = require('../models/Faculty');
 const StudyMaterial = require('../models/StudyMaterial');
 const PYQ = require('../models/PYQ');
+const DownloadLog = require('../models/DownloadLog');
 const {
   getCurrentSemester,
   getSemesterLabel,
@@ -290,6 +291,30 @@ router.get('/subjects/:subjectCode/syllabus', protect, studentOnly, async (req, 
   } catch (err) {
     console.error('Syllabus view error:', err);
     res.render('error', { message: 'Failed to load syllabus.', user: req.user });
+  }
+});
+
+// ─────────────────────────────────────────────────────
+// POST /student/track-download — Log a download
+// ─────────────────────────────────────────────────────
+router.post('/track-download', protect, studentOnly, async (req, res) => {
+  try {
+    const { itemId, itemType, subjectCode, facultyId } = req.body;
+    if (!itemId || !itemType || !subjectCode || !facultyId) {
+      return res.json({ success: false });
+    }
+    await DownloadLog.create({
+      studentId: req.user.id,
+      itemType,
+      itemId,
+      subjectCode,
+      facultyId,
+      downloadedAt: new Date()
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Download tracking error:', err);
+    res.json({ success: false });
   }
 });
 

@@ -175,7 +175,8 @@
         <div class="d-flex gap-2 flex-shrink-0">
           <a href="/<%= pyq.fileUrl %>" target="_blank"
             class="btn btn-sm fw-semibold"
-            style="background:#7b1fa2;color:white;border:none;border-radius:8px;white-space:nowrap;">
+            style="background:#7b1fa2;color:white;border:none;border-radius:8px;white-space:nowrap;"
+            onclick="trackDownload('<%= pyq._id %>','pyq','<%= subject.subjectCode %>','<%= pyq.facultyId ? pyq.facultyId._id : '' %>')">
             <i class="bi bi-download me-1"></i>Download
           </a>
           <button
@@ -200,6 +201,14 @@
 <script src="/js/main.js"></script>
 
 <script>
+  function trackDownload(itemId, itemType, subjectCode, facultyId) {
+    fetch('/student/track-download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId: itemId, itemType: itemType, subjectCode: subjectCode, facultyId: facultyId })
+    }).catch(function() {});
+  }
+
   fetch('/bookmarks/ids')
     .then(function(r){ return r.json(); })
     .then(function(data){
