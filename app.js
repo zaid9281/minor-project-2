@@ -9,6 +9,7 @@ const xss = require('xss-clean');
 const compression = require('compression');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
+const trackUsage = require('./middleware/trackUsage');
 
 const app = express();
 
@@ -105,6 +106,9 @@ app.use(cookieParser());
 // ─── Static Files ───────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Usage tracking for authenticated GET requests.
+app.use(trackUsage);
 
 // ─── View Engine ────────────────────────────
 app.set('view engine', 'ejs');

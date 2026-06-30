@@ -10,6 +10,8 @@ const PYQ = require('../models/PYQ');
 const LoginLog = require('../models/LoginLog');
 const Notification = require('../models/Notification');
 const Course = require('../models/Course');
+const UsageLog = require('../models/UsageLog');
+const Subject = require('../models/Subject');
 
 // GET /admin - Admin panel home (redirect)
 router.get('/', protect, adminOnly, (req, res) => {
@@ -377,6 +379,171 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
     console.error('Admin overview error:', err);
     res.render('error', {
       message: 'Failed to load overview.',
+      user: req.user
+    });
+  }
+});
+
+// GET /admin/analytics - Portal usage analytics
+router.get('/analytics', protect, adminOnly, async (req, res) => {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const dailyActiveUsers = await UsageLog.aggregate([
+      { $match: { loggedAt: { $gte: sevenDaysAgo } } },
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: '%Y-%m-%d', date: '$loggedAt' } },
+            userId: '$userId'
+          }
+        }
+      },
+      {
+        $group: {
+          _id: '$_id.date',
+          uniqueUsers: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      const found = dailyActiveUsers.find((x) => x._id === key);
+      last7Days.push({
+        date: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+        count: found ? found.uniqueUsers : 0
+      });
+    }
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayActiveUsers = await UsageLog.aggregate([
+      { $match: { loggedAt: { $gte: todayStart } } },
+      { $group: { _id: '$userId' } },
+      { $count: 'total' }
+    ]);
+    const todayUsers = todayActiveUsers[0] ? todayActiveUsers[0].total : 0;
+
+    const pageVisits = await UsageLog.aggregate([
+      {
+        $group: {
+          _id: '$page',
+          visits: { $sum: 1 },
+          uniqueUsers: { $addToSet: '$userId' }
+        }
+      },
+      {
+        $project: {
+          page: '$_id',
+          visits: 1,
+          uniqueUsers: { $size: '$uniqueUsers' }
+        }
+      },
+      { $sort: { visits: -1 } },
+      { $limit: 8 }
+    ]);
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const hourlyUsage = await UsageLog.aggregate([
+      { $match: { loggedAt: { $gte: thirtyDaysAgo } } },
+      {
+        $group: {
+          _id: { $hour: '$loggedAt' },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const hourlyData = [];
+    for (let h = 0; h < 24; h++) {
+      const found = hourlyUsage.find((x) => x._id === h);
+      const label = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
+      hourlyData.push({ hour: h, label, count: found ? found.count : 0 });
+    }
+
+    const actionBreakdown = await UsageLog.aggregate([
+      {
+        $group: {
+          _id: '$action',
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    const roleBreakdown = await UsageLog.aggregate([
+      {
+        $group: {
+          _id: '$userRole',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const subjectActivity = await UsageLog.aggregate([
+      { $match: { subjectCode: { $ne: null } } },
+      {
+        $group: {
+          _id: '$subjectCode',
+          visits: { $sum: 1 }
+        }
+      },
+      { $sort: { visits: -1 } },
+      { $limit: 6 }
+    ]);
+
+    const subjectCodes = subjectActivity.map((s) => s._id);
+    const subjects = await Subject.find({ subjectCode: { $in: subjectCodes } })
+      .select('subjectCode name')
+      .lean();
+    const subjectNameMap = {};
+    subjects.forEach((s) => {
+      subjectNameMap[s.subjectCode] = s.name;
+    });
+
+    const totalEvents = await UsageLog.countDocuments({});
+
+    const thisWeek = await UsageLog.countDocuments({
+      loggedAt: { $gte: sevenDaysAgo }
+    });
+    const prevWeekStart = new Date(sevenDaysAgo);
+    prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+    const prevWeek = await UsageLog.countDocuments({
+      loggedAt: { $gte: prevWeekStart, $lt: sevenDaysAgo }
+    });
+    const weeklyGrowth = prevWeek > 0
+      ? Math.round(((thisWeek - prevWeek) / prevWeek) * 100)
+      : 100;
+
+    res.render('admin/analytics', {
+      user: req.user,
+      last7Days,
+      todayUsers,
+      totalEvents,
+      thisWeek,
+      weeklyGrowth,
+      pageVisits,
+      hourlyData,
+      actionBreakdown,
+      roleBreakdown,
+      subjectActivity,
+      subjectNameMap
+    });
+  } catch (err) {
+    console.error('Usage analytics error:', err);
+    res.render('error', {
+      message: 'Failed to load usage analytics.',
       user: req.user
     });
   }
