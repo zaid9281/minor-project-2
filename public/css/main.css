@@ -1,3 +1,173 @@
+/* ── Theme Variables ── */
+:root {
+  --bg-page: #f0f4ff;
+  --bg-card: #ffffff;
+  --bg-card-alt: #f8f9ff;
+  --bg-hover: #fafcff;
+  --border-color: #e0e7ff;
+  --border-color-strong: #d0d9ff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #555555;
+  --text-muted: #888888;
+  --text-faint: #aaaaaa;
+  --navbar-grad-1: #003399;
+  --navbar-grad-2: #0055cc;
+  --shadow-color: rgba(0,0,0,0.06);
+}
+
+[data-theme="dark"] {
+  --bg-page: #0f1117;
+  --bg-card: #1a1d27;
+  --bg-card-alt: #20242f;
+  --bg-hover: #242837;
+  --border-color: #2e3343;
+  --border-color-strong: #3a4055;
+  --text-primary: #f0f2f8;
+  --text-secondary: #c5cad6;
+  --text-muted: #8d93a6;
+  --text-faint: #6b7185;
+  --navbar-grad-1: #0a1530;
+  --navbar-grad-2: #131c3d;
+  --shadow-color: rgba(0,0,0,0.4);
+}
+
+body {
+  background: var(--bg-page) !important;
+  color: var(--text-primary);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .section-card,
+[data-theme="dark"] .page-card,
+[data-theme="dark"] .subject-group,
+[data-theme="dark"] .post-card,
+[data-theme="dark"] .reply-box,
+[data-theme="dark"] .ann-card,
+[data-theme="dark"] .post-box,
+[data-theme="dark"] .form-card,
+[data-theme="dark"] .upload-card,
+[data-theme="dark"] .notif-card,
+[data-theme="dark"] .table-responsive,
+[data-theme="dark"] .pdf-container,
+[data-theme="dark"] .ask-form,
+[data-theme="dark"] .reply-form,
+[data-theme="dark"] .existing-card,
+[data-theme="dark"] .empty-state {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .group-header,
+[data-theme="dark"] .filter-bar,
+[data-theme="dark"] .panel-a-header,
+[data-theme="dark"] .table thead th {
+  background: var(--bg-card-alt) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .table td,
+[data-theme="dark"] .table th {
+  border-color: var(--border-color) !important;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .table tr:hover td {
+  background: var(--bg-hover) !important;
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] textarea {
+  background: var(--bg-card-alt) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .form-control::placeholder {
+  color: var(--text-faint) !important;
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+  background: var(--bg-card-alt) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] .text-secondary {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3,
+[data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6,
+[data-theme="dark"] .fw-bold {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .bar-track,
+[data-theme="dark"] .progress-bar-wrap {
+  background: var(--bg-card-alt) !important;
+}
+
+[data-theme="dark"] hr {
+  border-color: var(--border-color) !important;
+}
+
+/* Theme toggle switch */
+.theme-toggle-btn {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.theme-toggle-btn:hover {
+  background: rgba(255,255,255,0.22);
+  transform: scale(1.05);
+}
+.theme-toggle-btn i {
+  transition: transform 0.4s ease;
+}
+.theme-toggle-btn.spin i {
+  transform: rotate(180deg);
+}
+
+/* Catch-all override for inline white backgrounds in dark mode */
+[data-theme="dark"] div[style*="background:white"],
+[data-theme="dark"] div[style*="background: white"],
+[data-theme="dark"] div[style*="background:#fff"],
+[data-theme="dark"] div[style*="background: #fff"],
+[data-theme="dark"] div[style*="background:#ffffff"] {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] div[style*="background:#f8f9ff"],
+[data-theme="dark"] div[style*="background:#f0f4ff"],
+[data-theme="dark"] div[style*="background:#f5f5f5"] {
+  background: var(--bg-card-alt) !important;
+}
+
+[data-theme="dark"] div[style*="border:0.5px solid #e0e7ff"],
+[data-theme="dark"] div[style*="border-color:#e0e7ff"] {
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .navbar {
+  filter: brightness(0.85);
+}
+
 /* ═══════════════════════════════════════════
    SOET Portal — Global Stylesheet
    KR Mangalam University

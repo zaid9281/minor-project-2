@@ -1,3 +1,10 @@
+<script>
+  (function() {
+    var t = localStorage.getItem('soet-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+
 <nav class="navbar navbar-expand-lg sticky-top" style="background: linear-gradient(90deg,#1a1a2e,#16213e); box-shadow: 0 2px 15px rgba(0,0,0,0.3);">
   <div class="container-fluid px-4">
 
@@ -87,6 +94,9 @@
           <i class="bi bi-shield-lock"></i>
           <span class="d-none d-md-inline">Password</span>
         </a>
+        <button class="theme-toggle-btn me-1" onclick="toggleTheme(this)" title="Toggle dark mode">
+          <i class="bi bi-moon-stars-fill"></i>
+        </button>
         <a href="/auth/logout" class="btn btn-sm d-flex align-items-center gap-1"
           style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:8px;">
           <i class="bi bi-box-arrow-right"></i>

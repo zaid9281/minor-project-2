@@ -1,3 +1,34 @@
+// ─── Dark Mode Theme System ──────────────────
+(function() {
+  const saved = localStorage.getItem('soet-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+})();
+
+function toggleTheme(btn) {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('soet-theme', next);
+
+  if (btn) {
+    const icon = btn.querySelector('i');
+    if (icon) {
+      icon.className = next === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+    }
+    btn.classList.add('spin');
+    setTimeout(() => btn.classList.remove('spin'), 400);
+  }
+}
+
+function initThemeIcon() {
+  const theme = document.documentElement.getAttribute('data-theme') || 'light';
+  document.querySelectorAll('.theme-toggle-btn i').forEach(function(icon) {
+    icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initThemeIcon);
+
 /* ═══════════════════════════════════════════════════
    SOET Portal — Main JavaScript
    KR Mangalam University
