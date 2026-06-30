@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Groups — SOET Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="/css/main.css" rel="stylesheet">
+  <style>
+    body { background:var(--bg-page); font-family:'Segoe UI',sans-serif; }
+    .page-header {
+      background:linear-gradient(135deg,#7b1fa2,#9c27b0);
+      border-radius:20px; color:white;
+      padding:28px 32px; margin-bottom:24px;
+    }
+    .join-card {
+      background:var(--bg-card); border-radius:16px;
+      border:1.5px solid var(--border-color); padding:20px 24px;
+      margin-bottom:24px;
+    }
+    .group-card {
+      background:var(--bg-card); border-radius:16px;
+      border:1.5px solid var(--border-color); padding:18px 22px;
+      margin-bottom:12px; text-decoration:none; color:inherit;
+      display:block; transition:all 0.2s;
+    }
+    .group-card:hover {
+      box-shadow:0 4px 20px rgba(123,31,162,0.12);
+      border-color:#ce93d8; transform:translateY(-2px); color:inherit;
+    }
+    .member-pill {
+      background:#f3e5f5; color:#7b1fa2;
+      font-size:0.72rem; font-weight:700;
+      padding:3px 10px; border-radius:20px;
+    }
+    .empty-state {
+      text-align:center; padding:48px 20px;
+      background:var(--bg-card); border-radius:16px;
+      border:2px dashed var(--border-color); color:var(--text-faint);
+    }
+    .form-control:focus {
+      border-color:#7b1fa2;
+      box-shadow:0 0 0 3px rgba(123,31,162,0.12);
+    }
+    .btn-join {
+      background:linear-gradient(135deg,#7b1fa2,#9c27b0);
+      color:white; border:none; border-radius:10px;
+      padding:10px 24px; font-weight:700;
+      font-size:0.88rem; cursor:pointer;
+    }
+  </style>
+</head>
+<body data-authenticated="true">
+
+<%- include('../partials/studentNavbar') %>
+
+<div class="container-fluid px-3 px-md-4 py-4"
+  style="max-width:800px;margin:0 auto;">
+
+  <% if (success) { %>
+    <div id="page-toast" data-message="<%= success %>" data-type="success" class="d-none"></div>
+  <% } %>
+  <% if (error) { %>
+    <div id="page-toast" data-message="<%= error %>" data-type="error" class="d-none"></div>
+  <% } %>
+
+  <div class="page-header">
+    <h4 class="fw-bold mb-1">
+      <i class="bi bi-people-fill me-2" style="color:#FFD54F;"></i>My Study Groups
+    </h4>
+    <div style="opacity:0.85;font-size:0.85rem;">
+      Form small groups with classmates to share notes and study together
+    </div>
+  </div>
+
+  <div class="join-card">
+    <h6 class="fw-bold mb-3" style="font-size:0.9rem;">
+      <i class="bi bi-key-fill me-2" style="color:#7b1fa2;"></i>Join with Invite Code
+    </h6>
+    <form action="/groups/join" method="POST" class="d-flex gap-2">
+      <input type="text" name="inviteCode" class="form-control"
+        placeholder="Enter 6-character invite code" maxlength="6"
+        style="border-radius:10px;border-color:var(--border-color);text-transform:uppercase;">
+      <button type="submit" class="btn-join">Join</button>
+    </form>
+  </div>
+
+  <h6 class="fw-bold mb-3" style="font-size:0.88rem;color:var(--text-secondary);">
+    <i class="bi bi-collection-fill me-2" style="color:#7b1fa2;"></i>
+    Your Groups (<%= myGroups.length %>)
+  </h6>
+
+  <% if (myGroups.length === 0) { %>
+    <div class="empty-state">
+      <i class="bi bi-people" style="font-size:2.5rem;display:block;margin-bottom:12px;"></i>
+      <h6 style="color:var(--text-muted);">No study groups yet</h6>
+      <p style="font-size:0.82rem;color:var(--text-faint);margin:0;">
+        Create a group from any subject's page, or join one with an invite code above.
+      </p>
+    </div>
+  <% } else { %>
+    <% myGroups.forEach(function(g) { %>
+      <a href="/groups/<%= g._id %>" class="group-card">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+          <div>
+            <div style="font-weight:700;font-size:0.95rem;color:var(--text-primary);">
+              <%= g.name %>
+              <% if (g.creatorId.toString() === user.id) { %>
+                <span style="background:#fff3e0;color:#e65100;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:6px;margin-left:6px;">CREATOR</span>
+              <% } %>
+            </div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:3px;">
+              <%= g.subjectCode %> · <%= g.subjectName %>
+            </div>
+            <% if (g.description) { %>
+              <div style="font-size:0.78rem;color:var(--text-faint);margin-top:4px;">
+                <%= g.description %>
+              </div>
+            <% } %>
+          </div>
+          <span class="member-pill">
+            <i class="bi bi-people-fill me-1"></i><%= g.members.length %>/<%= g.maxMembers %>
+          </span>
+        </div>
+      </a>
+    <% }); %>
+  <% } %>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>
