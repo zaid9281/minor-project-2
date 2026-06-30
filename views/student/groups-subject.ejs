@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= subject.name %> — Study Groups</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="/css/main.css" rel="stylesheet">
+  <style>
+    body { background:var(--bg-page); font-family:'Segoe UI',sans-serif; }
+    .back-btn {
+      background:var(--bg-card); color:#7b1fa2;
+      border:2px solid var(--border-color); border-radius:10px;
+      padding:7px 16px; font-weight:600; font-size:0.82rem;
+      text-decoration:none; display:inline-flex; align-items:center;
+      gap:6px; margin-bottom:16px;
+    }
+    .create-card {
+      background:var(--bg-card); border-radius:16px;
+      border:1.5px solid var(--border-color); padding:20px 24px;
+      margin-bottom:20px;
+    }
+    .group-card {
+      background:var(--bg-card); border-radius:14px;
+      border:1.5px solid var(--border-color); padding:16px 20px;
+      margin-bottom:10px; display:flex; align-items:center;
+      justify-content:space-between; gap:12px; flex-wrap:wrap;
+    }
+    .join-btn, .open-btn {
+      font-size:0.78rem; font-weight:700; padding:7px 16px;
+      border-radius:8px; border:none; text-decoration:none;
+      cursor:pointer; white-space:nowrap;
+    }
+    .join-btn { background:#f3e5f5; color:#7b1fa2; }
+    .open-btn { background:#7b1fa2; color:white; }
+    .full-badge { background:#fce4ec; color:#c62828; font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:8px; }
+  </style>
+</head>
+<body data-authenticated="true">
+
+<%- include('../partials/studentNavbar') %>
+
+<div class="container-fluid px-3 px-md-4 py-4"
+  style="max-width:800px;margin:0 auto;">
+
+  <% if (success) { %>
+    <div id="page-toast" data-message="<%= success %>" data-type="success" class="d-none"></div>
+  <% } %>
+  <% if (error) { %>
+    <div id="page-toast" data-message="<%= error %>" data-type="error" class="d-none"></div>
+  <% } %>
+
+  <a href="/student/dashboard" class="back-btn">
+    <i class="bi bi-arrow-left"></i>Back to Dashboard
+  </a>
+
+  <h5 class="fw-bold mb-1">
+    <i class="bi bi-people-fill me-2" style="color:#7b1fa2;"></i>
+    Study Groups — <%= subject.subjectCode %>
+  </h5>
+  <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px;">
+    <%= subject.name %>
+  </div>
+
+  <div class="create-card">
+    <h6 class="fw-bold mb-3" style="font-size:0.9rem;">
+      <i class="bi bi-plus-circle-fill me-2" style="color:#7b1fa2;"></i>Create a New Group
+    </h6>
+    <form action="/groups/subject/<%= subject.subjectCode %>/create" method="POST">
+      <div class="mb-2">
+        <input type="text" name="name" class="form-control" maxlength="100" required
+          placeholder="Group name (e.g. ML Sem-4 Squad)"
+          style="border-radius:10px;border-color:var(--border-color);">
+      </div>
+      <div class="mb-3">
+        <input type="text" name="description" class="form-control" maxlength="300"
+          placeholder="Short description (optional)"
+          style="border-radius:10px;border-color:var(--border-color);">
+      </div>
+      <button type="submit"
+        style="background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:white;border:none;border-radius:10px;padding:9px 22px;font-weight:700;font-size:0.85rem;cursor:pointer;">
+        <i class="bi bi-people-fill me-2"></i>Create Group
+      </button>
+    </form>
+  </div>
+
+  <h6 class="fw-bold mb-3" style="font-size:0.85rem;color:var(--text-secondary);">
+    Existing Groups (<%= groups.length %>)
+  </h6>
+
+  <% if (groups.length === 0) { %>
+    <div style="text-align:center;padding:40px 20px;background:var(--bg-card);border-radius:16px;border:2px dashed var(--border-color);color:var(--text-faint);">
+      No groups yet for this subject. Be the first to create one!
+    </div>
+  <% } else { %>
+    <% groups.forEach(function(g) { %>
+      <div class="group-card">
+        <div>
+          <div style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">
+            <%= g.name %>
+          </div>
+          <div style="font-size:0.76rem;color:var(--text-muted);">
+            by <%= g.creatorName %> · <%= g.members.length %>/<%= g.maxMembers %> members
+          </div>
+        </div>
+        <% if (g.isMember) { %>
+          <a href="/groups/<%= g._id %>" class="open-btn">Open Group</a>
+        <% } else if (g.isFull) { %>
+          <span class="full-badge">Full</span>
+        <% } else { %>
+          <span style="font-size:0.74rem;color:var(--text-faint);text-align:right;">
+            Ask a member for the invite code
+          </span>
+        <% } %>
+      </div>
+    <% }); %>
+  <% } %>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>
