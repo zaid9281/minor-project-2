@@ -125,6 +125,7 @@ app.use('/announcements', require('./routes/announcements'));
 app.use('/bookmarks', require('./routes/bookmarks'));
 app.use('/ratings', require('./routes/ratings'));
 app.use('/forum', require('./routes/forum'));
+app.use('/groups', require('./routes/studygroups'));
 app.use('/bulk', require('./routes/bulk'));
 
 // ─── Ignore Favicon Requests ────────────────
