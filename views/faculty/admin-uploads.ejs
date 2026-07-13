@@ -76,7 +76,7 @@
                 <td><%= new Date(mat.uploadedAt).toLocaleDateString('en-IN') %></td>
                 <td>
                   <div class="d-flex gap-1">
-                    <a href="/<%= mat.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-primary" style="border-radius:6px;font-size:0.72rem;">
+                    <a href="<%= mat.fileUrl && mat.fileUrl.startsWith('http') ? mat.fileUrl : '/' + mat.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-primary" style="border-radius:6px;font-size:0.72rem;">
                       <i class="bi bi-download"></i>
                     </a>
                     <form action="/faculty/material/delete/<%= mat._id %>" method="POST" onsubmit="return confirm('Delete?')">
@@ -123,7 +123,7 @@
                 <td><%= new Date(pyq.uploadedAt).toLocaleDateString('en-IN') %></td>
                 <td>
                   <div class="d-flex gap-1">
-                    <a href="/<%= pyq.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-primary" style="border-radius:6px;font-size:0.72rem;">
+                    <a href="<%= pyq.fileUrl && pyq.fileUrl.startsWith('http') ? pyq.fileUrl : '/' + pyq.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-primary" style="border-radius:6px;font-size:0.72rem;">
                       <i class="bi bi-download"></i>
                     </a>
                     <form action="/faculty/pyq/delete/<%= pyq._id %>" method="POST" onsubmit="return confirm('Delete?')">

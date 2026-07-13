@@ -1,83 +1,68 @@
 const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/cloudinary');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
 
-// Ensure upload directories exist
-const ensureDir = (dirPath) => {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-};
-
-// Storage for study materials
-const materialStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = 'uploads/materials';
-    ensureDir(dir);
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const uniqueName = `MAT_${uuidv4()}${ext}`;
-    cb(null, uniqueName);
-  }
-});
-
-// Storage for PYQs
-const pyqStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = 'uploads/pyqs';
-    ensureDir(dir);
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const uniqueName = `PYQ_${uuidv4()}${ext}`;
-    cb(null, uniqueName);
-  }
-});
-
-// File filter — PDF only
 const pdfFilter = (req, file, cb) => {
-  const allowed = ['application/pdf'];
-  const allowedExt = ['.pdf'];
   const ext = path.extname(file.originalname).toLowerCase();
-
-  if (allowed.includes(file.mimetype) && allowedExt.includes(ext)) {
+  if (file.mimetype === 'application/pdf' && ext === '.pdf') {
     cb(null, true);
   } else {
     cb(new Error('Only PDF files are allowed.'), false);
   }
 };
 
-// Multer instances
+const materialStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'soet-portal/materials',
+    resource_type: 'raw',
+    format: 'pdf',
+    public_id: (req, file) => {
+      const name = file.originalname
+        .replace('.pdf', '').replace(/\s+/g, '_').substring(0, 50);
+      return `MAT_${name}_${Date.now()}`;
+    }
+  }
+});
+
+const pyqStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'soet-portal/pyqs',
+    resource_type: 'raw',
+    format: 'pdf',
+    public_id: (req, file) => {
+      const name = file.originalname
+        .replace('.pdf', '').replace(/\s+/g, '_').substring(0, 50);
+      return `PYQ_${name}_${Date.now()}`;
+    }
+  }
+});
+
+const syllabusStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'soet-portal/syllabus',
+    resource_type: 'raw',
+    format: 'pdf',
+    public_id: (req, file) => {
+      const subjectCode = req.body.subjectCode || 'SYL';
+      return `SYL_${subjectCode}_${Date.now()}`;
+    }
+  }
+});
+
 const uploadMaterial = multer({
   storage: materialStorage,
   fileFilter: pdfFilter,
-  limits: { fileSize: 20 * 1024 * 1024 } // 20MB
+  limits: { fileSize: 20 * 1024 * 1024 }
 });
 
 const uploadPYQ = multer({
   storage: pyqStorage,
   fileFilter: pdfFilter,
-  limits: { fileSize: 20 * 1024 * 1024 } // 20MB
-});
-
-// Storage for syllabus
-const syllabusStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = 'uploads/syllabus';
-    ensureDir(dir);
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    // Use subject code in filename for easy identification
-    const subjectCode = req.body.subjectCode || 'SYLLABUS';
-    const uniqueName = `SYL_${subjectCode}_${uuidv4()}${ext}`;
-    cb(null, uniqueName);
-  }
+  limits: { fileSize: 20 * 1024 * 1024 }
 });
 
 const uploadSyllabus = multer({

@@ -176,7 +176,7 @@
         </div>
         <div class="d-flex flex-column gap-2 flex-shrink-0">
           <div class="d-flex gap-2">
-            <a href="/<%= mat.fileUrl %>" target="_blank"
+            <a href="<%= mat.fileUrl && mat.fileUrl.startsWith('http') ? mat.fileUrl : '/' + mat.fileUrl %>" target="_blank"
               class="btn btn-sm download-link"
               data-item-id="<%= mat._id %>"
               data-item-type="material"

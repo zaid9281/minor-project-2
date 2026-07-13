@@ -330,7 +330,7 @@
                 <i class="bi bi-file-earmark-pdf"></i>
                 </div>
                 <div class="flex-grow-1" style="min-width:0;">
-                <a href="/<%= mat.fileUrl %>" target="_blank"
+                <a href="<%= mat.fileUrl && mat.fileUrl.startsWith('http') ? mat.fileUrl : '/' + mat.fileUrl %>" target="_blank"
                     class="fw-semibold text-decoration-none"
                     style="font-size:0.82rem;color:#1a1a1a;">
                     <%= mat.title %>
@@ -384,7 +384,7 @@
                 <i class="bi bi-file-earmark-pdf"></i>
                 </div>
                 <div class="flex-grow-1" style="min-width:0;">
-                <a href="/<%= pyq.fileUrl %>" target="_blank"
+                <a href="<%= pyq.fileUrl && pyq.fileUrl.startsWith('http') ? pyq.fileUrl : '/' + pyq.fileUrl %>" target="_blank"
                     class="fw-semibold text-decoration-none"
                     style="font-size:0.82rem;color:#1a1a1a;">
                     <%= pyq.subjectCode %> — <%= pyq.examType %> <%= pyq.year %>

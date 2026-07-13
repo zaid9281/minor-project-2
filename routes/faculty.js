@@ -15,7 +15,14 @@ const StudyMaterial = require('../models/StudyMaterial');
 const PYQ = require('../models/PYQ');
 const Student = require('../models/Student');
 const Course = require('../models/Course');
-const fs = require('fs');
+const cloudinary = require('../config/cloudinary');
+
+const getCloudinaryPublicId = (fileUrl) => {
+  if (!fileUrl || !fileUrl.includes('cloudinary')) return null;
+  const uploadPart = fileUrl.split('/upload/')[1];
+  if (!uploadPart) return null;
+  return uploadPart.replace(/^v\d+\//, '').replace(/\.[^.]+$/, '');
+};
 
 // ─────────────────────────────────────────────────────
 // GET /faculty/dashboard
@@ -191,7 +198,6 @@ router.post('/material/upload', protect, facultyOnly,
 
     // Validation
     if (!subjectCode || !unit || !title) {
-      if (req.file) fs.unlinkSync(req.file.path);
       return res.redirect('/faculty/upload/material?error=Subject, unit and title are required.');
     }
 
@@ -201,7 +207,6 @@ router.post('/material/upload', protect, facultyOnly,
 
     const unitNum = parseInt(unit);
     if (unitNum < 1 || unitNum > 6) {
-      fs.unlinkSync(req.file.path);
       return res.redirect('/faculty/upload/material?error=Unit must be between 1 and 6.');
     }
 
@@ -214,14 +219,12 @@ router.post('/material/upload', protect, facultyOnly,
           isActive: true
         });
         if (!isAllowed) {
-          fs.unlinkSync(req.file.path);
           return res.redirect('/faculty/upload/material?error=You are not authorized to upload for this subject.');
         }
       }
 
       const subject = await Subject.findOne({ subjectCode }).lean();
       if (!subject) {
-        fs.unlinkSync(req.file.path);
         return res.redirect('/faculty/upload/material?error=Subject not found.');
       }
 
@@ -233,7 +236,7 @@ router.post('/material/upload', protect, facultyOnly,
         unit: unitNum,
         title: title.trim(),
         description: description ? description.trim() : '',
-        fileUrl: req.file.path.replace(/\\/g, '/'),
+        fileUrl: req.file.path,
         fileName: req.file.originalname,
         fileSize: req.file.size,
         fileType: req.file.mimetype,
@@ -256,7 +259,6 @@ router.post('/material/upload', protect, facultyOnly,
 
     } catch (err) {
       console.error('Material upload error:', err);
-      if (req.file) fs.unlinkSync(req.file.path);
       return res.redirect('/faculty/upload/material?error=Upload failed. Please try again.');
     }
   }
@@ -320,7 +322,6 @@ router.post('/pyq/upload', protect, facultyOnly,
     const { subjectCode, year, semesterType, examType } = req.body;
 
     if (!subjectCode || !year || !semesterType || !examType) {
-      if (req.file) fs.unlinkSync(req.file.path);
       return res.redirect('/faculty/upload/pyq?error=All fields are required.');
     }
 
@@ -336,14 +337,12 @@ router.post('/pyq/upload', protect, facultyOnly,
           isActive: true
         });
         if (!isAllowed) {
-          fs.unlinkSync(req.file.path);
           return res.redirect('/faculty/upload/pyq?error=You are not authorized to upload for this subject.');
         }
       }
 
       const subject = await Subject.findOne({ subjectCode }).lean();
       if (!subject) {
-        fs.unlinkSync(req.file.path);
         return res.redirect('/faculty/upload/pyq?error=Subject not found.');
       }
 
@@ -355,7 +354,6 @@ router.post('/pyq/upload', protect, facultyOnly,
         examType
       });
       if (existing) {
-        fs.unlinkSync(req.file.path);
         return res.redirect(`/faculty/upload/pyq?error=A PYQ for ${subjectCode} - ${examType} ${year} (${semesterType}) already exists.`);
       }
 
@@ -367,7 +365,7 @@ router.post('/pyq/upload', protect, facultyOnly,
         year: parseInt(year),
         semesterType,
         examType,
-        fileUrl: req.file.path.replace(/\\/g, '/'),
+        fileUrl: req.file.path,
         fileName: req.file.originalname,
         uploadedAt: new Date()
       });
@@ -388,7 +386,6 @@ router.post('/pyq/upload', protect, facultyOnly,
 
     } catch (err) {
       console.error('PYQ upload error:', err);
-      if (req.file) fs.unlinkSync(req.file.path);
       return res.redirect('/faculty/upload/pyq?error=Upload failed. Please try again.');
     }
   }
@@ -476,9 +473,13 @@ router.post('/material/delete/:id', protect, facultyOnly, async (req, res) => {
       return res.redirect('/faculty/dashboard?error=Not authorized to delete this material.');
     }
 
-    // Delete file from disk
-    if (fs.existsSync(material.fileUrl)) {
-      fs.unlinkSync(material.fileUrl);
+    try {
+      const publicId = getCloudinaryPublicId(material.fileUrl);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+      }
+    } catch (e) {
+      console.log('Cloudinary delete error:', e.message);
     }
 
     await StudyMaterial.findByIdAndDelete(req.params.id);
@@ -502,8 +503,13 @@ router.post('/pyq/delete/:id', protect, facultyOnly, async (req, res) => {
       return res.redirect('/faculty/dashboard?error=Not authorized to delete this PYQ.');
     }
 
-    if (fs.existsSync(pyq.fileUrl)) {
-      fs.unlinkSync(pyq.fileUrl);
+    try {
+      const publicId = getCloudinaryPublicId(pyq.fileUrl);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+      }
+    } catch (e) {
+      console.log('Cloudinary delete error:', e.message);
     }
 
     await PYQ.findByIdAndDelete(req.params.id);
@@ -626,7 +632,6 @@ router.post('/syllabus/upload', protect, facultyOnly,
     const { subjectCode, academicYear } = req.body;
 
     if (!subjectCode) {
-      if (req.file) fs.unlinkSync(req.file.path);
       return res.redirect('/faculty/upload/syllabus?error=Please select a subject.');
     }
     if (!req.file) {
@@ -640,7 +645,6 @@ router.post('/syllabus/upload', protect, facultyOnly,
           subjectCode, facultyId: req.user.id, isActive: true
         });
         if (!isAllowed) {
-          fs.unlinkSync(req.file.path);
           return res.redirect(
             '/faculty/upload/syllabus?error=Not authorized for this subject.'
           );
@@ -649,14 +653,20 @@ router.post('/syllabus/upload', protect, facultyOnly,
 
       const subject = await Subject.findOne({ subjectCode }).lean();
       if (!subject) {
-        fs.unlinkSync(req.file.path);
         return res.redirect('/faculty/upload/syllabus?error=Subject not found.');
       }
 
       // Delete old file if exists
       const existing = await Syllabus.findOne({ subjectCode });
       if (existing) {
-        if (fs.existsSync(existing.fileUrl)) fs.unlinkSync(existing.fileUrl);
+        try {
+          const publicId = getCloudinaryPublicId(existing.fileUrl);
+          if (publicId) {
+            await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+          }
+        } catch (e) {
+          console.log('Cloudinary syllabus replace error:', e.message);
+        }
         await Syllabus.findByIdAndDelete(existing._id);
       }
 
@@ -666,7 +676,7 @@ router.post('/syllabus/upload', protect, facultyOnly,
         courseCode: subject.courseCode,
         semester: subject.semester,
         facultyId: req.user.id,
-        fileUrl: req.file.path.replace(/\\/g, '/'),
+        fileUrl: req.file.path,
         fileName: req.file.originalname,
         fileSize: req.file.size,
         academicYear: academicYear || '2025-26',
@@ -679,7 +689,6 @@ router.post('/syllabus/upload', protect, facultyOnly,
       );
     } catch (err) {
       console.error('Syllabus upload error:', err);
-      if (req.file) fs.unlinkSync(req.file.path);
       return res.redirect('/faculty/upload/syllabus?error=Upload failed. Try again.');
     }
   }
@@ -700,7 +709,14 @@ router.post('/syllabus/delete/:id', protect, facultyOnly, async (req, res) => {
         '/faculty/upload/syllabus?error=Not authorized to delete this syllabus.'
       );
     }
-    if (fs.existsSync(syllabus.fileUrl)) fs.unlinkSync(syllabus.fileUrl);
+    try {
+      const publicId = getCloudinaryPublicId(syllabus.fileUrl);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+      }
+    } catch (e) {
+      console.log('Cloudinary delete error:', e.message);
+    }
     await Syllabus.findByIdAndDelete(req.params.id);
     return res.redirect('/faculty/upload/syllabus?success=Syllabus deleted.');
   } catch (err) {

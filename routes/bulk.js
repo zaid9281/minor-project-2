@@ -3,9 +3,8 @@ const router = express.Router();
 const { protect } = require('../middleware/auth');
 const { facultyOnly } = require('../middleware/roleCheck');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/cloudinary');
 const StudyMaterial = require('../models/StudyMaterial');
 const PYQ = require('../models/PYQ');
 const Subject = require('../models/Subject');
@@ -13,25 +12,25 @@ const SubjectFacultyMap = require('../models/SubjectFacultyMap');
 const { notifyStudentsForSubject } = require('../utils/notificationHelper');
 
 // ── Multer for bulk upload ──
-const bulkStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = req.body.uploadType === 'pyq'
-      ? 'uploads/pyqs'
-      : 'uploads/materials';
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const prefix = req.body.uploadType === 'pyq' ? 'PYQ' : 'MAT';
-    cb(null, `${prefix}_${uuidv4()}${path.extname(file.originalname).toLowerCase()}`);
+const bulkStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    const isPYQ = req.body.uploadType === 'pyq';
+    const name = file.originalname
+      .replace('.pdf','').replace(/\s+/g,'_').substring(0, 50);
+    return {
+      folder: isPYQ ? 'soet-portal/pyqs' : 'soet-portal/materials',
+      resource_type: 'raw',
+      format: 'pdf',
+      public_id: `${isPYQ ? 'PYQ' : 'MAT'}_${name}_${Date.now()}`
+    };
   }
 });
 
 const bulkUpload = multer({
   storage: bulkStorage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf' &&
-        path.extname(file.originalname).toLowerCase() === '.pdf') {
+    if (file.mimetype === 'application/pdf') {
       cb(null, true);
     } else {
       cb(new Error(`${file.originalname} is not a PDF`), false);
@@ -98,8 +97,6 @@ router.post('/upload/single', protect, facultyOnly,
       return res.json({ success: false, error: 'No file received.' });
     }
 
-    const filePath = req.file.path.replace(/\\/g, '/');
-
     try {
       // Auth check
       if (req.user.role !== 'admin') {
@@ -107,7 +104,6 @@ router.post('/upload/single', protect, facultyOnly,
           subjectCode, facultyId: req.user.id, isActive: true
         });
         if (!allowed) {
-          fs.unlinkSync(filePath);
           return res.json({
             success: false,
             error: 'Not authorized for this subject.'
@@ -117,13 +113,11 @@ router.post('/upload/single', protect, facultyOnly,
 
       const subject = await Subject.findOne({ subjectCode }).lean();
       if (!subject) {
-        fs.unlinkSync(filePath);
         return res.json({ success: false, error: 'Subject not found.' });
       }
 
       if (uploadType === 'material') {
         if (!unit || !title) {
-          fs.unlinkSync(filePath);
           return res.json({
             success: false,
             error: 'Unit and title required for materials.'
@@ -138,7 +132,7 @@ router.post('/upload/single', protect, facultyOnly,
           unit: parseInt(unit),
           title: title.trim(),
           description: '',
-          fileUrl: filePath,
+          fileUrl: req.file.path,
           fileName: req.file.originalname,
           fileSize: req.file.size,
           fileType: 'application/pdf',
@@ -157,7 +151,6 @@ router.post('/upload/single', protect, facultyOnly,
 
       } else if (uploadType === 'pyq') {
         if (!year || !semesterType || !examType) {
-          fs.unlinkSync(filePath);
           return res.json({
             success: false,
             error: 'Year, semester type and exam type required for PYQs.'
@@ -171,7 +164,6 @@ router.post('/upload/single', protect, facultyOnly,
           examType
         });
         if (existing) {
-          fs.unlinkSync(filePath);
           return res.json({
             success: false,
             error: `PYQ already exists: ${subjectCode} ${examType} ${year} (${semesterType})`
@@ -186,7 +178,7 @@ router.post('/upload/single', protect, facultyOnly,
           year: parseInt(year),
           semesterType,
           examType,
-          fileUrl: filePath,
+          fileUrl: req.file.path,
           fileName: req.file.originalname,
           uploadedAt: new Date()
         });
@@ -206,7 +198,6 @@ router.post('/upload/single', protect, facultyOnly,
 
     } catch (err) {
       console.error('Bulk single upload error:', err);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       return res.json({ success: false, error: 'Server error. Try again.' });
     }
   }

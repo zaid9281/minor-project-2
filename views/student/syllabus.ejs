@@ -96,7 +96,7 @@
         </div>
       </div>
       <% if (syllabus) { %>
-        <a href="/<%= syllabus.fileUrl %>" target="_blank" download
+        <a href="<%= syllabus.fileUrl && syllabus.fileUrl.startsWith('http') ? syllabus.fileUrl : '/' + syllabus.fileUrl %>" target="_blank" download
           style="background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);border-radius:12px;padding:10px 20px;font-weight:700;font-size:0.88rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;">
           <i class="bi bi-download"></i>Download PDF
         </a>
@@ -145,11 +145,11 @@
           <%= subject.name %> — Syllabus
         </div>
         <div class="d-flex gap-2">
-          <a href="/<%= syllabus.fileUrl %>" target="_blank"
+          <a href="<%= syllabus.fileUrl && syllabus.fileUrl.startsWith('http') ? syllabus.fileUrl : '/' + syllabus.fileUrl %>" target="_blank"
             style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;font-size:0.78rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
             <i class="bi bi-box-arrow-up-right"></i>Open in new tab
           </a>
-          <a href="/<%= syllabus.fileUrl %>" download
+          <a href="<%= syllabus.fileUrl && syllabus.fileUrl.startsWith('http') ? syllabus.fileUrl : '/' + syllabus.fileUrl %>" download
             style="background:#4caf50;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.78rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
             <i class="bi bi-download"></i>Download
           </a>
@@ -158,12 +158,12 @@
 
       <!-- PDF embedded viewer -->
       <iframe
-        src="/<%= syllabus.fileUrl %>#toolbar=1&navpanes=1&scrollbar=1&view=FitH"
+        src="<%= syllabus.fileUrl && syllabus.fileUrl.startsWith('http') ? syllabus.fileUrl : '/' + syllabus.fileUrl %>#toolbar=1&navpanes=1&scrollbar=1&view=FitH"
         class="pdf-viewer"
         title="<%= subject.name %> Syllabus">
         <div style="padding:40px;text-align:center;color:#666;">
           <p>Your browser doesn't support inline PDF viewing.</p>
-          <a href="/<%= syllabus.fileUrl %>" target="_blank"
+          <a href="<%= syllabus.fileUrl && syllabus.fileUrl.startsWith('http') ? syllabus.fileUrl : '/' + syllabus.fileUrl %>" target="_blank"
             style="color:#003399;font-weight:600;">
             Click here to open the syllabus PDF
           </a>
