@@ -12,6 +12,8 @@ uploads/materials/*
 uploads/pyqs/*
 !uploads/materials/.gitkeep
 !uploads/pyqs/.gitkeep
+uploads/syllabus/*
+!uploads/syllabus/.gitkeep
 
 # Logs
 *.log

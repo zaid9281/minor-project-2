@@ -13,8 +13,9 @@ const trackUsage = require('./middleware/trackUsage');
 
 const app = express();
 
-// Trust the first proxy hop (Railway/Vercel/Nginx), so req.ip and secure cookies behave correctly.
-app.set('trust proxy', 1);
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
 // ─── Connect Database ───────────────────────
 connectDB();
