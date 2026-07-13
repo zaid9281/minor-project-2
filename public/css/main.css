@@ -408,3 +408,8 @@ body.fade-out { opacity: 0; }
   max-width: 400px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
+
+@keyframes pwaInstallSlideUp {
+  from { transform: translateX(-50%) translateY(40px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}

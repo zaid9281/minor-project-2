@@ -549,3 +549,52 @@ const RatingSystem = {
 function openRatingModal(materialId, title, existingStars, existingComment) {
   RatingSystem.open(materialId, title, existingStars, existingComment);
 }
+
+// --- PWA Install Prompt ---
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallBanner();
+});
+
+function showInstallBanner() {
+  if (document.getElementById('pwa-install-banner')) return;
+  if (localStorage.getItem('pwa-install-dismissed') === 'true') return;
+
+  const banner = document.createElement('div');
+  banner.id = 'pwa-install-banner';
+  banner.style.cssText = `
+    position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+    background:linear-gradient(135deg,#003399,#0055cc); color:white;
+    border-radius:14px; padding:14px 18px; z-index:9998;
+    box-shadow:0 8px 30px rgba(0,51,153,0.3);
+    display:flex; align-items:center; gap:14px;
+    max-width:92vw; width:380px; font-family:'Segoe UI',sans-serif;
+    animation:pwaInstallSlideUp 0.3s ease;
+  `;
+  banner.innerHTML = `
+    <div style="font-size:1.6rem;flex-shrink:0;">&#127891;</div>
+    <div style="flex-grow:1;min-width:0;">
+      <div style="font-weight:700;font-size:0.85rem;">Install SOET Portal</div>
+      <div style="font-size:0.72rem;opacity:0.8;">Add to your home screen for quick access</div>
+    </div>
+    <button id="pwa-install-btn" style="background:white;color:#003399;border:none;border-radius:8px;padding:7px 14px;font-weight:700;font-size:0.78rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">Install</button>
+    <button id="pwa-dismiss-btn" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:1.1rem;cursor:pointer;flex-shrink:0;padding:0 4px;">&times;</button>
+  `;
+  document.body.appendChild(banner);
+
+  document.getElementById('pwa-install-btn').onclick = async function() {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    banner.remove();
+  };
+
+  document.getElementById('pwa-dismiss-btn').onclick = function() {
+    localStorage.setItem('pwa-install-dismissed', 'true');
+    banner.remove();
+  };
+}
