@@ -235,7 +235,7 @@
 
             <!-- Actions -->
             <div class="d-flex gap-2">
-              <a href="<%= item.fileUrl && item.fileUrl.startsWith('http') ? item.fileUrl : '/' + item.fileUrl %>"
+              <a href="<%= pdfUrl(item.fileUrl) %>"
                 target="_blank" class="btn-action btn-open">
                 <i class="bi bi-download"></i>
                 <span class="d-none d-md-inline">Open</span>

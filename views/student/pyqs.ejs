@@ -173,7 +173,7 @@
           </div>
         </div>
         <div class="d-flex gap-2 flex-shrink-0">
-          <a href="<%= pyq.fileUrl && pyq.fileUrl.startsWith('http') ? pyq.fileUrl : '/' + pyq.fileUrl %>" target="_blank"
+          <a href="<%= pdfUrl(pyq.fileUrl) %>" target="_blank"
             class="btn btn-sm fw-semibold download-link"
             data-item-id="<%= pyq._id %>"
             data-item-type="pyq"

@@ -50,8 +50,7 @@ app.use(helmet({
         "https://cdn.jsdelivr.net"
       ],
       frameSrc: [
-        "'self'",
-        "https://res.cloudinary.com"
+        "'self'"
       ],
       frameAncestors: ["'self'"],
       objectSrc: ["'self'"],
@@ -129,6 +128,15 @@ app.use('/ratings', require('./routes/ratings'));
 app.use('/forum', require('./routes/forum'));
 app.use('/groups', require('./routes/studygroups'));
 app.use('/bulk', require('./routes/bulk'));
+
+// Make cloudinary URL helper available to all views
+app.locals.pdfUrl = function(fileUrl) {
+  if (!fileUrl) return '#';
+  if (fileUrl.includes('cloudinary.com') && fileUrl.includes('/raw/upload/')) {
+    return fileUrl.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+  }
+  return fileUrl.startsWith('http') ? fileUrl : '/' + fileUrl;
+};
 
 // ─── Ignore Favicon Requests ────────────────
 app.get('/favicon.ico', (req, res) => res.status(204).end());
