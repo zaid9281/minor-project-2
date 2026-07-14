@@ -333,30 +333,26 @@
 </script>
 
 <script>
-  // Attach click/hover handlers to rating stars (avoids inline EJS in attributes)
-  (function(){
-    var starsContainer = document.getElementById('rating-stars');
-    if (!starsContainer) return;
-    starsContainer.addEventListener('click', function(e){
-      var t = e.target;
-      if (t && t.classList.contains('star')) {
-        var v = parseInt(t.getAttribute('data-star')||0,10);
-        if (window.RatingSystem && typeof window.RatingSystem.setStars === 'function') {
-          window.RatingSystem.setStars(v);
-        }
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('#rating-stars .star').forEach(function(star) {
+    var val = parseInt(star.getAttribute('data-value'), 10);
+    star.addEventListener('click', function() {
+      if (window.RatingSystem && typeof window.RatingSystem.setStars === 'function') {
+        RatingSystem.setStars(val);
       }
     });
-    starsContainer.addEventListener('mouseover', function(e){
-      var t = e.target;
-      if (t && t.classList.contains('star') && window.RatingSystem && typeof window.RatingSystem.hover === 'function') {
-        var v = parseInt(t.getAttribute('data-star')||0,10);
-        window.RatingSystem.hover(v);
+    star.addEventListener('mouseover', function() {
+      if (window.RatingSystem && typeof window.RatingSystem.hover === 'function') {
+        RatingSystem.hover(val);
       }
     });
-    starsContainer.addEventListener('mouseout', function(e){
-      if (window.RatingSystem && typeof window.RatingSystem.hoverOut === 'function') window.RatingSystem.hoverOut();
+    star.addEventListener('mouseout', function() {
+      if (window.RatingSystem && typeof window.RatingSystem.hoverOut === 'function') {
+        RatingSystem.hoverOut();
+      }
     });
-  })();
+  });
+});
 </script>
 
 <!-- Rating Modal -->
@@ -383,7 +379,7 @@
     <div class="text-center mb-3">
       <div class="star-rating justify-content-center mb-2" id="rating-stars">
         <% for(let s = 1; s <= 5; s++) { %>
-          <span class="star" data-star="<%= s %>">★</span>
+          <span class="star" data-value="<%= s %>" id="star-<%= s %>">★</span>
         <% } %>
       </div>
       <div id="rating-label"
