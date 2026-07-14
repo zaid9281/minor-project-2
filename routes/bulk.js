@@ -3,33 +3,15 @@ const router = express.Router();
 const { protect } = require('../middleware/auth');
 const { facultyOnly } = require('../middleware/roleCheck');
 const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('../config/cloudinary');
 const StudyMaterial = require('../models/StudyMaterial');
 const PYQ = require('../models/PYQ');
 const Subject = require('../models/Subject');
 const SubjectFacultyMap = require('../models/SubjectFacultyMap');
+const { uploadToSupabase } = require('../utils/uploadHelper');
 const { notifyStudentsForSubject } = require('../utils/notificationHelper');
 
-// ── Multer for bulk upload ──
-const bulkStorage = new CloudinaryStorage({
-  cloudinary,
-  params: async (req, file) => {
-    const isPYQ = req.body.uploadType === 'pyq';
-    const name = file.originalname
-      .replace('.pdf','').replace(/\s+/g,'_').substring(0, 50);
-    return {
-      folder: isPYQ ? 'soet-portal/pyqs' : 'soet-portal/materials',
-      resource_type: 'raw',
-      format: 'pdf',
-      access_mode: 'public',
-      public_id: `${isPYQ ? 'PYQ' : 'MAT'}_${name}_${Date.now()}`
-    };
-  }
-});
-
 const bulkUpload = multer({
-  storage: bulkStorage,
+  storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
       cb(null, true);
@@ -125,6 +107,10 @@ router.post('/upload/single', protect, facultyOnly,
           });
         }
 
+        const folder = 'materials';
+        const filename = `MAT_${subjectCode}_${Date.now()}.pdf`;
+        const fileUrl = await uploadToSupabase(req.file.buffer, folder, filename);
+
         await StudyMaterial.create({
           subjectCode,
           facultyId: req.user.id,
@@ -133,7 +119,7 @@ router.post('/upload/single', protect, facultyOnly,
           unit: parseInt(unit),
           title: title.trim(),
           description: '',
-          fileUrl: req.file.path,
+          fileUrl,
           fileName: req.file.originalname,
           fileSize: req.file.size,
           fileType: 'application/pdf',
@@ -171,6 +157,10 @@ router.post('/upload/single', protect, facultyOnly,
           });
         }
 
+        const folder = 'pyqs';
+        const filename = `PYQ_${subjectCode}_${examType}_${year}_${Date.now()}.pdf`;
+        const fileUrl = await uploadToSupabase(req.file.buffer, folder, filename);
+
         await PYQ.create({
           subjectCode,
           facultyId: req.user.id,
@@ -179,7 +169,7 @@ router.post('/upload/single', protect, facultyOnly,
           year: parseInt(year),
           semesterType,
           examType,
-          fileUrl: req.file.path,
+          fileUrl,
           fileName: req.file.originalname,
           uploadedAt: new Date()
         });

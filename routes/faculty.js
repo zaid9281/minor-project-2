@@ -1,5 +1,11 @@
 const Syllabus = require('../models/Syllabus');
-const { uploadMaterial, uploadPYQ, uploadSyllabus } = require('../utils/uploadHelper');
+const {
+  uploadMaterial,
+  uploadPYQ,
+  uploadSyllabus,
+  uploadToSupabase,
+  deleteFromSupabase
+} = require('../utils/uploadHelper');
 
 const { notifyStudentsForSubject } = require('../utils/notificationHelper');
 
@@ -15,14 +21,6 @@ const StudyMaterial = require('../models/StudyMaterial');
 const PYQ = require('../models/PYQ');
 const Student = require('../models/Student');
 const Course = require('../models/Course');
-const cloudinary = require('../config/cloudinary');
-
-const getCloudinaryPublicId = (fileUrl) => {
-  if (!fileUrl || !fileUrl.includes('cloudinary')) return null;
-  const uploadPart = fileUrl.split('/upload/')[1];
-  if (!uploadPart) return null;
-  return uploadPart.replace(/^v\d+\//, '').replace(/\.[^.]+$/, '');
-};
 
 // ─────────────────────────────────────────────────────
 // GET /faculty/dashboard
@@ -228,6 +226,9 @@ router.post('/material/upload', protect, facultyOnly,
         return res.redirect('/faculty/upload/material?error=Subject not found.');
       }
 
+      const filename = `MAT_${subjectCode}_${Date.now()}.pdf`;
+      const fileUrl = await uploadToSupabase(req.file.buffer, 'materials', filename);
+
       await StudyMaterial.create({
         subjectCode,
         facultyId: req.user.id,
@@ -236,7 +237,7 @@ router.post('/material/upload', protect, facultyOnly,
         unit: unitNum,
         title: title.trim(),
         description: description ? description.trim() : '',
-        fileUrl: req.file.path,
+        fileUrl,
         fileName: req.file.originalname,
         fileSize: req.file.size,
         fileType: req.file.mimetype,
@@ -357,6 +358,9 @@ router.post('/pyq/upload', protect, facultyOnly,
         return res.redirect(`/faculty/upload/pyq?error=A PYQ for ${subjectCode} - ${examType} ${year} (${semesterType}) already exists.`);
       }
 
+      const filename = `PYQ_${subjectCode}_${examType}_${year}_${Date.now()}.pdf`;
+      const fileUrl = await uploadToSupabase(req.file.buffer, 'pyqs', filename);
+
       await PYQ.create({
         subjectCode,
         facultyId: req.user.id,
@@ -365,7 +369,7 @@ router.post('/pyq/upload', protect, facultyOnly,
         year: parseInt(year),
         semesterType,
         examType,
-        fileUrl: req.file.path,
+        fileUrl,
         fileName: req.file.originalname,
         uploadedAt: new Date()
       });
@@ -473,14 +477,7 @@ router.post('/material/delete/:id', protect, facultyOnly, async (req, res) => {
       return res.redirect('/faculty/dashboard?error=Not authorized to delete this material.');
     }
 
-    try {
-      const publicId = getCloudinaryPublicId(material.fileUrl);
-      if (publicId) {
-        await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
-      }
-    } catch (e) {
-      console.log('Cloudinary delete error:', e.message);
-    }
+    await deleteFromSupabase(material.fileUrl);
 
     await StudyMaterial.findByIdAndDelete(req.params.id);
     return res.redirect('/faculty/dashboard?success=Material deleted successfully.');
@@ -503,14 +500,7 @@ router.post('/pyq/delete/:id', protect, facultyOnly, async (req, res) => {
       return res.redirect('/faculty/dashboard?error=Not authorized to delete this PYQ.');
     }
 
-    try {
-      const publicId = getCloudinaryPublicId(pyq.fileUrl);
-      if (publicId) {
-        await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
-      }
-    } catch (e) {
-      console.log('Cloudinary delete error:', e.message);
-    }
+    await deleteFromSupabase(pyq.fileUrl);
 
     await PYQ.findByIdAndDelete(req.params.id);
     return res.redirect('/faculty/dashboard?success=PYQ deleted successfully.');
@@ -659,16 +649,12 @@ router.post('/syllabus/upload', protect, facultyOnly,
       // Delete old file if exists
       const existing = await Syllabus.findOne({ subjectCode });
       if (existing) {
-        try {
-          const publicId = getCloudinaryPublicId(existing.fileUrl);
-          if (publicId) {
-            await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
-          }
-        } catch (e) {
-          console.log('Cloudinary syllabus replace error:', e.message);
-        }
+        await deleteFromSupabase(existing.fileUrl);
         await Syllabus.findByIdAndDelete(existing._id);
       }
+
+      const filename = `SYL_${subjectCode}_${Date.now()}.pdf`;
+      const fileUrl = await uploadToSupabase(req.file.buffer, 'syllabus', filename);
 
       await Syllabus.create({
         subjectCode,
@@ -676,7 +662,7 @@ router.post('/syllabus/upload', protect, facultyOnly,
         courseCode: subject.courseCode,
         semester: subject.semester,
         facultyId: req.user.id,
-        fileUrl: req.file.path,
+        fileUrl,
         fileName: req.file.originalname,
         fileSize: req.file.size,
         academicYear: academicYear || '2025-26',
@@ -709,14 +695,7 @@ router.post('/syllabus/delete/:id', protect, facultyOnly, async (req, res) => {
         '/faculty/upload/syllabus?error=Not authorized to delete this syllabus.'
       );
     }
-    try {
-      const publicId = getCloudinaryPublicId(syllabus.fileUrl);
-      if (publicId) {
-        await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
-      }
-    } catch (e) {
-      console.log('Cloudinary delete error:', e.message);
-    }
+    await deleteFromSupabase(syllabus.fileUrl);
     await Syllabus.findByIdAndDelete(req.params.id);
     return res.redirect('/faculty/upload/syllabus?success=Syllabus deleted.');
   } catch (err) {

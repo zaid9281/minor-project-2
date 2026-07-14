@@ -1,7 +1,8 @@
-const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('../config/cloudinary');
 const path = require('path');
+const multer = require('multer');
+const supabase = require('../config/supabase');
+
+const storage = multer.memoryStorage();
 
 const pdfFilter = (req, file, cb) => {
   const ext = path.extname(file.originalname).toLowerCase();
@@ -12,66 +13,60 @@ const pdfFilter = (req, file, cb) => {
   }
 };
 
-const materialStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'soet-portal/materials',
-    resource_type: 'raw',
-    format: 'pdf',
-    access_mode: 'public',
-    public_id: (req, file) => {
-      const name = file.originalname
-        .replace('.pdf', '').replace(/\s+/g, '_').substring(0, 50);
-      return `MAT_${name}_${Date.now()}`;
-    }
-  }
-});
-
-const pyqStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'soet-portal/pyqs',
-    resource_type: 'raw',
-    format: 'pdf',
-    access_mode: 'public',
-    public_id: (req, file) => {
-      const name = file.originalname
-        .replace('.pdf', '').replace(/\s+/g, '_').substring(0, 50);
-      return `PYQ_${name}_${Date.now()}`;
-    }
-  }
-});
-
-const syllabusStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'soet-portal/syllabus',
-    resource_type: 'raw',
-    format: 'pdf',
-    access_mode: 'public',
-    public_id: (req, file) => {
-      const subjectCode = req.body.subjectCode || 'SYL';
-      return `SYL_${subjectCode}_${Date.now()}`;
-    }
-  }
-});
-
 const uploadMaterial = multer({
-  storage: materialStorage,
+  storage,
   fileFilter: pdfFilter,
   limits: { fileSize: 20 * 1024 * 1024 }
 });
 
 const uploadPYQ = multer({
-  storage: pyqStorage,
+  storage,
   fileFilter: pdfFilter,
   limits: { fileSize: 20 * 1024 * 1024 }
 });
 
 const uploadSyllabus = multer({
-  storage: syllabusStorage,
+  storage,
   fileFilter: pdfFilter,
   limits: { fileSize: 20 * 1024 * 1024 }
 });
 
-module.exports = { uploadMaterial, uploadPYQ, uploadSyllabus };
+const uploadToSupabase = async (buffer, folder, filename) => {
+  const key = `${folder}/${filename}`;
+
+  const { error } = await supabase.storage
+    .from('pdfs')
+    .upload(key, buffer, {
+      contentType: 'application/pdf',
+      upsert: true
+    });
+
+  if (error) throw new Error(error.message);
+
+  const { data: urlData } = supabase.storage
+    .from('pdfs')
+    .getPublicUrl(key);
+
+  return urlData.publicUrl;
+};
+
+const deleteFromSupabase = async (fileUrl) => {
+  try {
+    const url = new URL(fileUrl);
+    const pathParts = url.pathname.split('/pdfs/');
+    if (pathParts.length > 1) {
+      const key = pathParts[1];
+      await supabase.storage.from('pdfs').remove([key]);
+    }
+  } catch (e) {
+    console.log('Supabase delete error:', e.message);
+  }
+};
+
+module.exports = {
+  uploadMaterial,
+  uploadPYQ,
+  uploadSyllabus,
+  uploadToSupabase,
+  deleteFromSupabase
+};

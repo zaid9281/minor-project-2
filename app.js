@@ -47,10 +47,12 @@ app.use(helmet({
         "'self'",
         "https://login.microsoftonline.com",
         "https://graph.microsoft.com",
-        "https://cdn.jsdelivr.net"
+        "https://cdn.jsdelivr.net",
+        "https://*.supabase.co"
       ],
       frameSrc: [
-        "'self'"
+        "'self'",
+        "https://*.supabase.co"
       ],
       frameAncestors: ["'self'"],
       objectSrc: ["'self'"],
@@ -132,9 +134,6 @@ app.use('/bulk', require('./routes/bulk'));
 // Make cloudinary URL helper available to all views
 app.locals.pdfUrl = function(fileUrl) {
   if (!fileUrl) return '#';
-  if (fileUrl.includes('cloudinary.com') && fileUrl.includes('/raw/upload/')) {
-    return fileUrl.replace('/raw/upload/', '/raw/upload/fl_attachment/');
-  }
   return fileUrl.startsWith('http') ? fileUrl : '/' + fileUrl;
 };
 

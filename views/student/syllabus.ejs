@@ -69,38 +69,11 @@
   </a>
 
   <!-- Subject Hero -->
-  <div class="subject-hero">
-    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
-      <div>
-        <span style="background:rgba(255,255,255,0.2);padding:3px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;">
-          <%= subject.subjectCode %>
-        </span>
-        <h3 class="fw-bold mt-2 mb-2"><%= subject.name %></h3>
-        <div class="d-flex flex-wrap gap-2">
-          <span class="info-chip">
-            <i class="bi bi-calendar3"></i><%= semesterLabel %>
-          </span>
-          <span class="info-chip">
-            <i class="bi bi-star-fill" style="color:#FFB800;"></i>
-            <%= subject.credits %> Credits
-          </span>
-          <span class="info-chip">
-            <i class="bi bi-book"></i><%= subject.type %>
-          </span>
-          <% if (syllabus) { %>
-            <span class="info-chip">
-              <i class="bi bi-calendar-check"></i>
-              Academic Year <%= syllabus.academicYear %>
-            </span>
-          <% } %>
-        </div>
-      </div>
-      <% if (syllabus) { %>
-        <a href="<%= pdfUrl(syllabus.fileUrl) %>" target="_blank" download
-          style="background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);border-radius:12px;padding:10px 20px;font-weight:700;font-size:0.88rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;">
-          <i class="bi bi-download"></i>Download PDF
-        </a>
-      <% } %>
+    <iframe
+      src="<%= pdfUrl(syllabus.fileUrl) %>#toolbar=1&navpanes=1&scrollbar=1&view=FitH"
+      class="pdf-viewer"
+      title="<%= subject.name %> Syllabus">
+    </iframe>
     </div>
   </div>
 
