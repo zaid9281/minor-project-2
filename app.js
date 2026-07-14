@@ -36,7 +36,7 @@ app.use(helmet({
         "'unsafe-inline'",
         "https://cdn.jsdelivr.net"
       ],
-      scriptSrcAttr: ["'unsafe-inline'"],
+      scriptSrcAttr: ["'unsafe-inline'", "'unsafe-hashes'"],
       fontSrc: [
         "'self'",
         "https://cdn.jsdelivr.net",
@@ -74,7 +74,7 @@ if (process.env.NODE_ENV !== 'production') {
 // General API limiter
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
+  max: 500,
   message: 'Too many requests from this IP. Please try again after 15 minutes.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -83,11 +83,17 @@ const generalLimiter = rateLimit({
 // Strict limiter for login routes
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10, // max 10 login attempts per 15 min
-  message: 'Too many login attempts. Please try again after 15 minutes.',
+  max: 50,
+  message: {
+    error: 'Too many login attempts. Please try again after 15 minutes.'
+  },
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
+  skip: (req) => {
+    const whitelist = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
+    return whitelist.includes(req.ip);
+  }
 });
 
 app.use(generalLimiter);
