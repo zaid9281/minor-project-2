@@ -18,6 +18,7 @@ const materialStorage = new CloudinaryStorage({
     folder: 'soet-portal/materials',
     resource_type: 'raw',
     format: 'pdf',
+    access_mode: 'public',
     public_id: (req, file) => {
       const name = file.originalname
         .replace('.pdf', '').replace(/\s+/g, '_').substring(0, 50);
@@ -32,6 +33,7 @@ const pyqStorage = new CloudinaryStorage({
     folder: 'soet-portal/pyqs',
     resource_type: 'raw',
     format: 'pdf',
+    access_mode: 'public',
     public_id: (req, file) => {
       const name = file.originalname
         .replace('.pdf', '').replace(/\s+/g, '_').substring(0, 50);
@@ -46,6 +48,7 @@ const syllabusStorage = new CloudinaryStorage({
     folder: 'soet-portal/syllabus',
     resource_type: 'raw',
     format: 'pdf',
+    access_mode: 'public',
     public_id: (req, file) => {
       const subjectCode = req.body.subjectCode || 'SYL';
       return `SYL_${subjectCode}_${Date.now()}`;

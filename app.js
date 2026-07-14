@@ -50,7 +50,8 @@ app.use(helmet({
         "https://cdn.jsdelivr.net"
       ],
       frameSrc: [
-        "'self'"
+        "'self'",
+        "https://res.cloudinary.com"
       ],
       frameAncestors: ["'self'"],
       objectSrc: ["'self'"],

@@ -22,6 +22,7 @@ const bulkStorage = new CloudinaryStorage({
       folder: isPYQ ? 'soet-portal/pyqs' : 'soet-portal/materials',
       resource_type: 'raw',
       format: 'pdf',
+      access_mode: 'public',
       public_id: `${isPYQ ? 'PYQ' : 'MAT'}_${name}_${Date.now()}`
     };
   }
