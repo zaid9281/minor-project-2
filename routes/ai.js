@@ -124,7 +124,7 @@ Your role:
       subjectCode
     });
   } catch (err) {
-    console.error('Gemini API error:', err);
+    console.error('Gemini API error full:', err.message, err.status, err.errorDetails)
 
     if (err.message && err.message.includes('429')) {
       return res.json({
