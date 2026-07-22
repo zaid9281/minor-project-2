@@ -8,6 +8,8 @@ const Syllabus = require('../models/Syllabus');
 const StudyMaterial = require('../models/StudyMaterial');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Simple per-user cooldown to prevent rate limit hits
+const userLastRequest = new Map();
 
 // GET /ai/assistant/:subjectCode — Chat page
 router.get('/assistant/:subjectCode', protect, studentOnly, async (req, res) => {
@@ -45,6 +47,18 @@ router.get('/assistant/:subjectCode', protect, studentOnly, async (req, res) => 
 
 // POST /ai/chat — Send message to Gemini
 router.post('/chat', protect, studentOnly, async (req, res) => {
+  const userId = req.user.id.toString();
+  const now = Date.now();
+  const lastReq = userLastRequest.get(userId) || 0;
+
+  if (now - lastReq < 3000) {
+    return res.json({
+      success: false,
+      error: 'Please wait a moment before sending another message.'
+    });
+  }
+  userLastRequest.set(userId, now);
+
   const { message, subjectCode, history } = req.body;
 
   if (!message || !message.trim()) {
@@ -91,7 +105,7 @@ Your role:
 - You can suggest which unit a topic belongs to based on the materials listed above`;
 
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.0-flash-lite',
       systemInstruction: systemContext
     });
 
@@ -109,8 +123,10 @@ Your role:
     const chat = model.startChat({
       history: chatHistory,
       generationConfig: {
-        maxOutputTokens: 1024,
-        temperature: 0.7
+        maxOutputTokens: 800,
+        temperature: 0.7,
+        topP: 0.8,
+        topK: 40
       }
     });
 

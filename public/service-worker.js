@@ -5,9 +5,9 @@ const OFFLINE_URL = '/offline.html';
 const PRECACHE_ASSETS = [
   '/css/main.css',
   '/js/main.js',
-  '/offline.html',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  // '/offline.html',
+  // '/icons/icon-192.png',
+  // '/icons/icon-512.png'
 ];
 
 // Install: cache static assets
