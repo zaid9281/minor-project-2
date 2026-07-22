@@ -83,36 +83,16 @@ router.post('/chat', protect, studentOnly, async (req, res) => {
       ? materials.map((m) => `Unit ${m.unit}: ${m.title}`).join('\n')
       : 'No materials uploaded yet.';
 
-    const systemContext = `You are an expert academic tutor for the subject "${subject.name}" (Code: ${subjectCode}) at KR Mangalam University, School of Engineering & Technology (SOET), Gurugram, India.
-
-Subject Details:
-- Name: ${subject.name}
-- Code: ${subjectCode}
-- Semester: ${subject.semester}
-- Credits: ${subject.credits}
-- Type: ${subject.type}
-
-Available Study Materials in this subject:
-${materialContext}
-
-Your role:
-- Answer questions related to ${subject.name} clearly and accurately
-- Explain concepts in simple terms suitable for B.Tech students
-- Give examples relevant to engineering and computer science
-- If asked about topics outside this subject, politely redirect to ${subject.name}
-- Format answers clearly with bullet points or numbered lists when helpful
-- Keep answers concise but complete
-- You can suggest which unit a topic belongs to based on the materials listed above`;
+    const systemContext = `You are an expert academic tutor for "${subject.name}" (${subjectCode}) at KR Mangalam University, India. Answer questions clearly for B.Tech students. Keep answers concise and helpful. Available topics:\n${materialContext}`;
 
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-lite',
+      model: 'gemini-1.5-flash-latest',
       systemInstruction: systemContext
     });
 
     const chatHistory = [];
-    if (Array.isArray(history) && history.length > 0) {
-      history.slice(-6).forEach((h) => {
-        if (!h || !h.role || !h.content) return;
+    if (history && Array.isArray(history) && history.length > 0) {
+      history.slice(-4).forEach(h => {
         chatHistory.push({
           role: h.role,
           parts: [{ text: h.content }]
@@ -123,10 +103,8 @@ Your role:
     const chat = model.startChat({
       history: chatHistory,
       generationConfig: {
-        maxOutputTokens: 800,
-        temperature: 0.7,
-        topP: 0.8,
-        topK: 40
+        maxOutputTokens: 600,
+        temperature: 0.7
       }
     });
 
@@ -134,19 +112,24 @@ Your role:
     const response = await result.response;
     const text = response.text();
 
-    return res.json({
-      success: true,
-      reply: text,
-      subjectCode
-    });
+    return res.json({ success: true, reply: text, subjectCode });
   } catch (err) {
     console.error('Gemini API error full:', err.message, err.status, err.errorDetails)
 
     if (err.message && err.message.includes('429')) {
-      return res.json({
-        success: false,
-        error: 'AI is busy right now. Please wait a moment and try again.'
-      });
+      // Wait 10 seconds and retry once
+      await new Promise(r => setTimeout(r, 10000));
+      try {
+        const model2 = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+        const result2 = await model2.generateContent(message.trim());
+        const text2 = result2.response.text();
+        return res.json({ success: true, reply: text2, subjectCode });
+      } catch (retryErr) {
+        return res.json({
+          success: false,
+          error: 'AI is temporarily overloaded. Please try again in a minute.'
+        });
+      }
     }
 
     return res.json({
