@@ -1,16 +1,12 @@
-const CACHE_NAME = 'soet-portal-v1';
-const OFFLINE_URL = '/offline.html';
+const CACHE_NAME = 'soet-portal-v2';
 
-// Files to cache immediately on install: static assets only
+// Only cache these static assets
 const PRECACHE_ASSETS = [
   '/css/main.css',
-  '/js/main.js',
-  // '/offline.html',
-  // '/icons/icon-192.png',
-  // '/icons/icon-512.png'
+  '/js/main.js'
 ];
 
-// Install: cache static assets
+// ── Install ──
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -19,63 +15,41 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate: clean up old caches
+// ── Activate ──
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME)
           .map((key) => caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
+      );
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch: network first, fallback to cache, fallback to offline page
+// ── Fetch — only handle static assets, let everything else pass through ──
 self.addEventListener('fetch', (event) => {
   const req = event.request;
 
   // Only handle GET requests
   if (req.method !== 'GET') return;
 
-  // Never cache API/data endpoints
-  const skipCache = [
-    '/notifications/', '/bookmarks/ids', '/ratings/',
-    '/announcements/latest-banner', '/student/track-download',
-    '/auth/', '/admin/'
-  ];
+  const url = new URL(req.url);
 
-  if (skipCache.some((p) => req.url.includes(p))) {
-    event.respondWith(fetch(req).catch(() => caches.match(req)));
-    return;
-  }
-
-  // Static assets: cache first
-  if (req.url.includes('/css/') || req.url.includes('/js/') || req.url.includes('/icons/')) {
+  // Only cache our static CSS and JS files
+  if (url.pathname.startsWith('/css/') || url.pathname.startsWith('/js/')) {
     event.respondWith(
       caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req).then((res) => {
-          const resClone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
+        return cached || fetch(req).then((res) => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
           return res;
         });
-      })
+      }).catch(() => fetch(req))
     );
     return;
   }
 
-  // Page navigations: network first, offline page fallback
-  if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req).catch(() => caches.match(OFFLINE_URL))
-    );
-    return;
-  }
-
-  // Default: network first, cache fallback
-  event.respondWith(
-    fetch(req).catch(() => caches.match(req))
-  );
+  // Everything else — just fetch normally, no service worker interference
+  // This includes all page navigations, AI routes, API calls, PDFs
 });
