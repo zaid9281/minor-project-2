@@ -255,7 +255,7 @@ Open **http://localhost:3000**
 
 | Name | Email | Role |
 |---|---|---|
-| Dr. Rajesh Sharma | dr.rajesh.sharma@krmu.edu.in | **Admin** |
+| Mr Admin | admin@krmu.edu.in | **Admin** |
 | Dr. Priya Verma | dr.priya.verma@krmu.edu.in | Faculty |
 | Dr. Anil Kumar | dr.anil.kumar@krmu.edu.in | Faculty |
 | Dr. Kavita Singh | dr.kavita.singh@krmu.edu.in | Faculty |
